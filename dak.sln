@@ -1,0 +1,40 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.26403.7
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "App", "App\App.fsproj", "{E353DA41-8A4E-41C9-ADD8-C60F56264549}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyWinForms", "MyWinForms\MyWinForms.csproj", "{E305A89A-00AD-47F8-AC0E-95431A94BD37}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Widgets", "Widgets\Widgets.csproj", "{258D6E94-185B-487F-B9E2-70F45E7ECBAD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ObjectListView2012", "ObjectListView\ObjectListView2012.csproj", "{18FEDA0C-D147-4286-B39A-01204808106A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E353DA41-8A4E-41C9-ADD8-C60F56264549}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E353DA41-8A4E-41C9-ADD8-C60F56264549}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E353DA41-8A4E-41C9-ADD8-C60F56264549}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E353DA41-8A4E-41C9-ADD8-C60F56264549}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E305A89A-00AD-47F8-AC0E-95431A94BD37}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E305A89A-00AD-47F8-AC0E-95431A94BD37}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E305A89A-00AD-47F8-AC0E-95431A94BD37}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E305A89A-00AD-47F8-AC0E-95431A94BD37}.Release|Any CPU.Build.0 = Release|Any CPU
+		{258D6E94-185B-487F-B9E2-70F45E7ECBAD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{258D6E94-185B-487F-B9E2-70F45E7ECBAD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{258D6E94-185B-487F-B9E2-70F45E7ECBAD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{258D6E94-185B-487F-B9E2-70F45E7ECBAD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{18FEDA0C-D147-4286-B39A-01204808106A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{18FEDA0C-D147-4286-B39A-01204808106A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{18FEDA0C-D147-4286-B39A-01204808106A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{18FEDA0C-D147-4286-B39A-01204808106A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
