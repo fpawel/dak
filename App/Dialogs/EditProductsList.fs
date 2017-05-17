@@ -5,7 +5,7 @@ open System.Windows.Forms
 open System.ComponentModel
 
 //open MyWinForms.TopDialog
-open MainWindow
+open Dak.MainWindow
 open Dak
 open Dak.View
 

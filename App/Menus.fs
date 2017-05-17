@@ -8,7 +8,7 @@ open System.ComponentModel
 open System.ComponentModel.DataAnnotations
 
 open MyWinForms.TopDialog
-open MainWindow
+open Dak.MainWindow
 open Dak.Operations
 open Thread2
 open Dak

@@ -38,7 +38,7 @@ module Pneumo =
             clapan.Value <- Some code
             sprintf "%d" code, None
         | Err e -> "Ошибка", Some e
-        |> MainWindow.HardwareInfo.peumo.setTextSafe (Logging.fromResult r)
+        |> Dak.MainWindow.HardwareInfo.peumo.setTextSafe (Logging.fromResult r)
         Result.map (fun _ -> ()) r
 
 module Termo =   
@@ -134,7 +134,7 @@ module Termo =
         match r with
         | Ok (x,y) -> sprintf "%M (%M)" x y, None
         | Err e -> "Ошибка", Some e
-        |> MainWindow.HardwareInfo.termo.setTextSafe (Logging.fromResult r)
+        |> Dak.MainWindow.HardwareInfo.termo.setTextSafe (Logging.fromResult r)
 
         r
 
@@ -146,7 +146,7 @@ module Termo =
         match r with
         | Ok () -> newstate.What, None
         | Err e -> "Ошибка", Some e
-        |> MainWindow.HardwareInfo.termo.setTextSafe (Logging.fromResult r)
+        |> Dak.MainWindow.HardwareInfo.termo.setTextSafe (Logging.fromResult r)
 
         r
 

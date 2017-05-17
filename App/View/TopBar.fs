@@ -4,7 +4,7 @@ open System
 open System.Windows.Forms
 open System.Drawing
 
-open MainWindow
+open Dak.MainWindow
 
 let placeHolder = 
     let x = new Panel(Parent = form, Dock = DockStyle.Top, Height = 42)

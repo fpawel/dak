@@ -200,6 +200,11 @@ let adjustCurrent  =
             }            
         ]
 
+let setPorogsProduction =
+    "Установка порогов на выпуск в эксплуатацию" <|> fun () ->
+        party.GetProductType().Scale.Porogs
+        |> party.SetPorogs
+
 let testConc7rele  =
     
     let processTestPt (testPt : TestPt) = 
@@ -233,9 +238,7 @@ let testConc7rele  =
                 party.DoForEachOnProduct(fun p ->  p.FixTestConc Test17 ) 
                 |> Result.someErr
             switchOffPneumo ]
-        yield "Установка порогов на выпуск в эксплуатацию" <|> fun () ->
-            party.GetProductType().Scale.Porogs
-            |> party.SetPorogs ]
+        yield setPorogsProduction ]
 
 let testConc7  =
     
@@ -260,6 +263,7 @@ let main() =
     let productType = party.Party.PartyInfo.ProductType
     "Настройка ДАК" <||>
         [   yield "Установка к-тов исп." <|> party.WriteKefsInitValues
+            yield setPorogsProduction
             yield "Выбор измеряемого компонента" <|> party.SelectGas
             yield adjustCurrent
             yield adjust ScaleEdgeBeg
@@ -275,8 +279,7 @@ let main() =
                     testConc7            
             yield texprogonTermo() ]
     |> Operation.ApplyRootConfig
-    // Thread2.scenary.Set mil82    
-
+    
 let getAllAsList() =     
     Op.MapReduce Some scenary.Value
 

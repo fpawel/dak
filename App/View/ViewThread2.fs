@@ -8,7 +8,7 @@ open System.Threading
 open MyWinForms.Utils
 open MyWinForms.TopDialog
 
-open MainWindow
+open Dak.MainWindow
 
 let private updLabelTime (tb:Label) startTime = 
     tb.Text <- sprintf "%s - %s" ( DateTime.toString startTime) (TimeSpan.toString <| DateTime.Now - startTime  ) 
@@ -68,7 +68,7 @@ let panelModalMessage =
             Placement = Center, ButtonAccept = Some "Продолжить", ButtonCancel = None )
 
 module Delay = 
-    
+    let private form = Dak.MainWindow.form
     
     [<AutoOpen>]
     module private P = 
@@ -94,7 +94,7 @@ module Delay =
             Dak.Operations.Delay.cancel()
 
         Dak.Operations.Delay.onStart.Value <- fun what get'time -> 
-            MainWindow.form.PerformThreadSafeAction <| fun () ->
+            form.PerformThreadSafeAction <| fun () ->
                 text <- what
                 panelPerformingInfo.Visible <- false
                 progressBarDelay.Value <- 0        
@@ -103,7 +103,7 @@ module Delay =
             
 
         Dak.Operations.Delay.onStop.Value <- fun () -> 
-            MainWindow.form.PerformThreadSafeAction <| fun () ->
+            form.PerformThreadSafeAction <| fun () ->
                 panelDelay.Visible <- false
                 panelPerformingInfo.Visible <- true            
 
@@ -141,10 +141,10 @@ let initialize =
     Thread2.showPerformingMessage.Value <- fun level text -> 
         if TabPages.getSelected() <> TabsheetScenary then
             form.PerformThreadSafeAction <| fun () ->
-                let x = MainWindow.labelPerformingInfo
+                let x = Dak.MainWindow.labelPerformingInfo
                 x.Text <- text                
                 x.ForeColor <- Logging.foreColor level
-                MainWindow.setTooltip x Thread2.scenary.Value.FullName
+                Dak.MainWindow.setTooltip x Thread2.scenary.Value.FullName
                
                
     let panelSenaryResult = 
@@ -159,7 +159,7 @@ let initialize =
     
 
     Thread2.IsRunningChangedEvent.addHandler <| fun (_,v) ->
-        MainWindow.form.PerformThreadSafeAction <| fun () ->
+        Dak.MainWindow.form.PerformThreadSafeAction <| fun () ->
             panelPerformingInfo.Visible <- v            
             labelScenaryName.Text <- sprintf "Выполняется сценарий %A"  Thread2.scenary.Value.FullName
 

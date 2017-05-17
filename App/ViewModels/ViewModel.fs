@@ -14,7 +14,7 @@ type ViewModelBase() =
         member x.PropertyChanged = propertyChangedEvent.Publish
 
     member private x.RaisePropertyChangedBase propertyName = 
-        MainWindow.form.PerformThreadSafeAction <| fun () ->
+        Dak.MainWindow.form.PerformThreadSafeAction <| fun () ->
             propertyChangedEvent.Trigger([| x; PropertyChangedEventArgs(propertyName) |])
 
     static member raisePropertyChanged<'a when 'a :> ViewModelBase>  (x:'a ) propertyName =         

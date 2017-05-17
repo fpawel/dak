@@ -6,7 +6,7 @@ open System.Drawing
 open System.Collections.Generic
 open System.ComponentModel
 
-open MainWindow
+open Dak.MainWindow
 open Dak
 
 [<AutoOpen>]
@@ -37,8 +37,8 @@ module GridProductColumns =
     let conn = 
         %% new TextColumn(DataPropertyName = "Connection", HeaderText = "Наличие связи", 
                             Width = 200, ReadOnly = true,
-                            AutoSizeMode = DataGridViewAutoSizeColumnMode.ColumnHeader, 
-                            MinimumWidth = 200)
+                            AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells, 
+                            MinimumWidth = 60)
 
     let extpopup = 
         %% new TextColumn(ReadOnly = true, AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells )
@@ -81,7 +81,7 @@ module GridProductColumns =
                 hitTest <- null
 
         fun _ ->
-            let mousePos = System.Windows.Forms.Cursor.Position
+            let mousePos = Cursor.Position
             let clientPos = gridProducts.PointToClient mousePos
             let nextHitTest = gridProducts.HitTest( clientPos.X, clientPos.Y)
             let n = extpopup.Index
@@ -118,11 +118,6 @@ module GridProductColumns =
         for col in stend do
             col.Visible <- Config.App.config.View.InterrogateStend6026
 
-    
-    
-
-    
-
 let initialize = 
     
     GridProductColumns.init()
@@ -132,8 +127,8 @@ let initialize =
         if e.ColumnIndex = GridProductColumns.conn.Index then
             let text, fore, back =
                 match e.Value :?> Result<string,string> option with
-                | Some (Ok s) -> s, Color.Black, Color.White
-                | Some (Err s) -> s, Color.Red, Color.LightGray
+                | Some (Ok _) -> "Связь установлена", Color.Black, Color.White
+                | Some (Err _) -> "Ошибка", Color.Red, Color.LightGray
                 | _ -> "", Color.Black, Color.White
             e.Value <- text
             let row = gridProducts.Rows.[e.RowIndex]

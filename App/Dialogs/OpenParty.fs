@@ -4,11 +4,6 @@ open System
 open System.Windows.Forms
 open System.Drawing
 open System.Collections.Generic
-open System.ComponentModel
-open System.ComponentModel.DataAnnotations
-
-open MyWinForms.TopDialog
-open MainWindow
 open Dak
 open Dak.View
 

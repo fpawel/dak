@@ -1,12 +1,10 @@
 ﻿module Programm
 
 open System
-open System.IO
 open System.Windows.Forms
 open System.Threading
 
 open Dak.View
-open Dak.ViewModel
 
 type Guid = Runtime.InteropServices.GuidAttribute
 
@@ -17,10 +15,10 @@ let main () =
         
         let config = Config.App.config
         let party = Dak.AppData.party
-        let form = MainWindow.form
+        let form = Dak.MainWindow.form
 
-        MainWindow.initialize()
-        TabPages.setSelected MainWindow.TabsheetParty
+        Dak.MainWindow.initialize()
+        TabPages.setSelected Dak.MainWindow.TabsheetParty
         TopBar.initialize()
         Products.initialize()        
         Scenary.initialize()
@@ -30,7 +28,7 @@ let main () =
         Menus.initialize()
         Ref.``check referencies was initialized``()
         
-        Application.Run MainWindow.form 
+        Application.Run form 
         Dak.AppData.save()
         
         

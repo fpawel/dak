@@ -6,6 +6,7 @@ open System.ComponentModel
 open Dak
 open Dak.Operations
 open MainWindow
+open System.Windows.Forms
 
 let showScenaryReport = Ref.Initializable<_>(sprintf "showScenaryReport %s:%s" __LINE__ __SOURCE_FILE__ )
 let showPerformingMessage = Ref.Initializable<_>(sprintf "showPerformingMessage %s:%s" __LINE__ __SOURCE_FILE__ )
@@ -22,24 +23,37 @@ let notKeepRunning() = not (scenaryKeepRunning.Get())
 let forceStop() = scenaryKeepRunning.Value <- false
 
 let addKeepRunningChanged f = 
-    scenaryKeepRunning.AddChanged f
-    
+    scenaryKeepRunning.AddChanged f    
 
 let scenary = 
-    Ref.Observable(Operation.CreateSingle("scenary_op", none) none)
-    
+    let valueRef = Ref.Observable(Operation.CreateSingle("scenary_op", none) none)
+
+    // при изменении сценария 
+    valueRef.AddChanged <| fun (_,scenary) -> 
+        
+        // изменить treeListViewScenary
+        let asIEnumerable = [scenary] :> Collections.IEnumerable
+        treeListViewScenary.SetObjects asIEnumerable
+        treeListViewScenary.CheckedObjectsEnumerable <- asIEnumerable        
+        treeListViewScenary.ExpandAll()
+
+        // показать в журнале сообщения, которые относятся к этому сценарию
+        LoggingHtml.set webbJournal scenary.FullName scenary.RunInfo.LoggingRecords
+        
+
+    valueRef
 
 [<AutoOpen>]
 module private Helpers2 =
-    let operation = 
+    // операция, выполняемая в текущий момент
+    let operationCurrentRunning = 
         let x = Ref.Observable(None)
         Logging.addLogger <| fun l s ->        
             match  x.Value with
             | Some (op:Operation) -> 
                 op.RunInfo.AddLogging l s  
                 showPerformingMessage.Value l s
-            | _ -> ()
-            
+            | _ -> ()            
         |> ignore
         x
 
@@ -50,12 +64,12 @@ module private Helpers2 =
         MessageBox.Show(s,"СТМ-30М", MessageBoxButtons.OK, MessageBoxIcon.Exclamation)
         |> ignore
 
-let add'operation'changed f = 
-    operation.AddChanged (snd >> f)
+let addOperationCurrentRunningChangedHandler f = 
+    operationCurrentRunning.AddChanged (snd >> f)
 
-let private is'running = 
+let private isRrunning = 
     let x = Ref.Observable(false)
-    MainWindow.form.Closing.Add <| fun e ->
+    form.Closing.Add <| fun e ->
         if x.Value then 
             e.Cancel <- true
             forceStop()
@@ -63,12 +77,10 @@ let private is'running =
     x
 
 module IsRunningChangedEvent =
-
     let addHandler f = 
-        is'running.AddChanged <| fun e -> 
+        isRrunning.AddChanged <| fun e -> 
             safe form <| fun () -> 
                 f e 
-
 
 type PerformBuilder() =
     let (>>=) p rest = 
@@ -170,30 +182,47 @@ let private stopHardwareWork() =
             Hardware.Termo.stop() ]
 
 let private beginRun op = 
-    let prev'op = operation.Get()
-    operation.Set (Some op)
+    let prev'op = operationCurrentRunning.Get()
+    operationCurrentRunning.Set (Some op)
     showPerformingMessage.Value Logging.Info ""
     perfomOperationEvent.Trigger(op,true)
     fun () -> 
-        operation.Set prev'op
+        operationCurrentRunning.Set prev'op
         perfomOperationEvent.Trigger(op,false)
 
+let private isOperationUncheckedByUser operation = 
+    form.PerformThreadSafeAction(fun () -> 
+        let mutable found = false 
+        let mutable result = false 
+        let mutable n = 0
+        while n < treeListViewScenary.Items.Count && not found do
+            let item = treeListViewScenary.Items.[n]            
+            if Object.ReferenceEquals( treeListViewScenary.GetModelObject(item.Index) ,operation) then
+                result <- item.StateImageIndex = 0
+                found <- true
+            n <- n + 1
+        result 
+        )
+    
+    
+
 let run stopHardware (x : Operation) =
-    if scenaryKeepRunning.Value || is'running.Value then
+    if scenaryKeepRunning.Value || isRrunning.Value then
         failwith "already performing"
-    scenary.Set x
-    operation.Set (Some x)
+    if scenary.Value.FullName <> x.FullName then 
+        scenary.Set x
+    operationCurrentRunning.Set (Some x)
     scenaryKeepRunning.Value <- true
-    is'running.Set true   
+    isRrunning.Set true   
     Logging.info "Начало выполнения сценария %A" x.FullName 
     let dostart, dostop = MyWinForms.Utils.timer 10000 AppData.save
     dostart()
 
     MainWindow.treeListViewScenary.SelectObject x
     LoggingHtml.set webbJournal x.FullName []
-
+    
     async{
-        let r = Operation.Perform beginRun isKeepRunning x
+        let r = Operation.Perform beginRun isKeepRunning isOperationUncheckedByUser x
         let scenaryWasBreakedByUser = not scenaryKeepRunning.Value
         scenaryKeepRunning.Value <- false
             
@@ -219,8 +248,8 @@ let run stopHardware (x : Operation) =
         Logging.write level "Окончание выполнения сценария %A - %s" x.FullName message
         let title = sprintf "%s %s" x.RunInfo.Status x.FullName
         showScenaryReport.Value title level message 
-        operation.Set None 
-        is'running.Set false
+        operationCurrentRunning.Set None 
+        isRrunning.Set false
         for p in party.Products do
             p.Connection <- None 
         AppData.save() }

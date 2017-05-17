@@ -1,4 +1,4 @@
-﻿module MainWindow
+﻿module Dak.MainWindow
 
 #nowarn "40"
 
@@ -170,11 +170,11 @@ module ScenaryColumn =
         x
 
     let time = 
-        let x = new BrightIdeasSoftware.OLVColumn(Text = "Задержка", MinimumWidth = 70, Sortable = false )
+        let x = new BrightIdeasSoftware.OLVColumn(Text = "Задержка", MinimumWidth = 90, Sortable = false )
         x.CellEditUseWholeCell <- Nullable false
         x
 
-    let status = new BrightIdeasSoftware.OLVColumn(Text = "Статус", MinimumWidth = 70, Sortable = false, IsEditable = false)
+    let status = new BrightIdeasSoftware.OLVColumn(Text = "Статус", MinimumWidth = 90, Sortable = false, IsEditable = false)
 
 let treeListViewScenary = 
     let splt = new Splitter(Parent = TabsheetScenary.RightTab, Dock = DockStyle.Left, Width = 3, BackColor = Color.LightGray)
@@ -199,6 +199,10 @@ let treeListViewScenary =
     x.Columns.Add ScenaryColumn.name |> ignore
     x.Columns.Add ScenaryColumn.time |> ignore
     x.Columns.Add ScenaryColumn.status |> ignore
+
+    x.HierarchicalCheckboxes <- true
+
+
     x
 
 let gridProducts = 

@@ -5,7 +5,7 @@ open System.Windows.Forms
 open System.Drawing
 open System.ComponentModel
 
-open MainWindow
+open Dak.MainWindow
 open Dak
 open Dak.Operations
 
@@ -144,12 +144,14 @@ let initialize =
         | :? Operation as x -> box x.RunInfo.DelayTime
         | _ -> null
 
-
+    // при изменении сценария изменить treeListViewScenary
     Thread2.scenary.AddChanged <| fun (_,x) -> 
-        [x] :> Collections.IEnumerable
-        |> treeListViewScenary.SetObjects
+        treeListViewScenary.SetObjects ([x] :> Collections.IEnumerable)
+        treeListViewScenary.CheckedObjectsEnumerable <- ([x] :> Collections.IEnumerable)
+        
         LoggingHtml.set webbJournal x.FullName x.RunInfo.LoggingRecords
         treeListViewScenary.ExpandAll()
+
     Thread2.scenary.Set (Scenaries.main())
 
     party.OnAddLogging.Add <| fun (operation, level,text) ->

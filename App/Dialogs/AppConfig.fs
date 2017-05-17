@@ -66,7 +66,7 @@ type PartyConfigView() =
             Thread2.scenary.Set (Operations.Scenaries.main())
             //View.Scenary.updateGridViewBinding()            
             match View.TabPages.getSelected() with
-            | MainWindow.TabsheetChart -> 
+            | Dak.MainWindow.TabsheetChart -> 
                 View.TabPages.TabChart.update()           
             | _ -> ()
             

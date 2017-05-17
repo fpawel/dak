@@ -3,9 +3,7 @@
 open System
 open System.Windows.Forms
 open System.Drawing
-open System.Text.RegularExpressions
-
-open MainWindow
+open Dak.MainWindow
 
 [<AutoOpen>]
 module private Helpers =
@@ -193,7 +191,7 @@ module private Helpers =
         pn
 
     let popupAxis width height ctrMin ctrMax = 
-        let p1 = new Panel (Width = width, Height = height, Font = MainWindow.form.Font, 
+        let p1 = new Panel (Width = width, Height = height, Font = Dak.MainWindow.form.Font, 
                             BorderStyle = BorderStyle.FixedSingle)    
         
 
@@ -226,7 +224,7 @@ module private Helpers =
                         ImageKey = key, Width = 40, Height = 40,
                         FlatStyle = FlatStyle.Flat,
                         ImageList = Widgets.Icons.instance.imageList1)
-        MainWindow.setTooltip x tooltip
+        Dak.MainWindow.setTooltip x tooltip
         
         x
 
@@ -243,7 +241,7 @@ module private Helpers =
             new Button( Left = left, Top = top,
                         Text = key, Width = 40, Height = 40,
                         FlatStyle = FlatStyle.Flat )
-        MainWindow.setTooltip button tooltip
+        Dak.MainWindow.setTooltip button tooltip
         button.Click.Add <| fun _ ->  
             let popupP = popupAxis popupWidth popupHeight ctrMin ctrMax          
             let popup = new MyWinForms.Popup(popupP :> Control)    
@@ -333,7 +331,7 @@ module private Helpers1 =
                     Dak.MilVar.values
             Dak.MilVar.descr Dak.Chart.physVar
             |> sprintf "График. %s"
-            |> MainWindow.setActivePageTitle 
+            |> Dak.MainWindow.setActivePageTitle 
             Dak.AppData.updateChartSeriesList ()
             let m = Dak.Chart.axisScalingViewModel
             m.MaxDateTime <- None
@@ -342,7 +340,7 @@ module private Helpers1 =
             m.MaxY <- None
         x.SelectedIndexChanged.Add update
         x.SelectedItem <- Dak.MilVar.name Dak.MilVar.conc
-        MainWindow.setTooltip x "Выбрать параметр прибора, отображаемый на графике"
+        Dak.MainWindow.setTooltip x "Выбрать параметр прибора, отображаемый на графике"
         x
 
 let initialize =
@@ -378,7 +376,7 @@ let initialize =
 
     addctrl placeholder OrigZoomStore.button 
     imgbtn 3 46 "list" "Выбор видимых графиков" <| fun b -> 
-        let pan = new Panel (Font = MainWindow.form.Font, BorderStyle = BorderStyle.FixedSingle)
+        let pan = new Panel (Font = Dak.MainWindow.form.Font, BorderStyle = BorderStyle.FixedSingle)
         
         chart.ApplyPaletteColors()
         let mutable x = 3
