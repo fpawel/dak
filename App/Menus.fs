@@ -207,7 +207,8 @@ let private initButtons1 =
     
 open Dak.View.TopBar
 
-let initialize =
+let initialize = 
+    
     let buttonRun = new Button( Parent = TopBar.thread1ButtonsBar, Dock = DockStyle.Left, AutoSize = true,
                                 ImageKey = "run",
                                 Text = (sprintf "%A" Thread2.scenary.Value.FullName),
@@ -290,9 +291,6 @@ let initialize =
                 (Dialogs.AppConfigView())
                 ( fun _ g -> g.PropertySort <- PropertySort.Alphabetical )
         popup.Font <- form.Font        
-        popup.Show(buttonSettings)
-
-        
+        popup.Show(buttonSettings)        
     Thread2.scenary.Set (Scenaries.main())
-
     fun () -> ()

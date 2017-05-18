@@ -9,29 +9,6 @@ module private Helpers =
     let party = AppData.party
 
 [<TypeConverter(typeof<ExpandableObjectConverter>)>]
-type PgsConfigView() =
-
-    [<DisplayName("ПГС1")>]    
-    [<Description("ПГС1, начало шкалы, концентрация ")>]
-    member x.PgsGas0
-        with get() = party.GetPgs ScaleBeg
-        and set v = party.SetPgs ScaleBeg v 
-
-    [<DisplayName("ПГС3")>]    
-    [<Description("ПГС3, середина шкалы, концентрация ")>]
-    member x.PgsGas1
-        with get() = party.GetPgs ScaleMid
-        and set v = party.SetPgs ScaleMid v 
-
-    [<DisplayName("ПГС4")>]    
-    [<Description("ПГС4, конец шкалы, концентрация ")>]
-    member x.PgsGas5
-        with get() = party.GetPgs ScaleEnd
-        and set v = party.SetPgs ScaleEnd v 
-
-    override __.ToString() = ""
-
-[<TypeConverter(typeof<ExpandableObjectConverter>)>]
 type TemperatureConfigView() =
 
     [<DisplayName("T-")>]    
@@ -77,15 +54,29 @@ type PartyConfigView() =
         and set v = 
             party.Name <- v
 
-    [<DisplayName("Концентрация ПГС")>]
-    member val  Pgs = PgsConfigView() with get,set
+    [<DisplayName("ПГС1")>]    
+    [<Description("ПГС1, начало шкалы, концентрация ")>]
+    member x.PgsGas0
+        with get() = party.GetPgs ScaleBeg
+        and set v = party.SetPgs ScaleBeg v 
+
+    [<DisplayName("ПГС3")>]    
+    [<Description("ПГС3, середина шкалы, концентрация ")>]
+    member x.PgsGas1
+        with get() = party.GetPgs ScaleMid
+        and set v = party.SetPgs ScaleMid v 
+
+    [<DisplayName("ПГС4")>]    
+    [<Description("ПГС4, конец шкалы, концентрация ")>]
+    member x.PgsGas5
+        with get() = party.GetPgs ScaleEnd
+        and set v = party.SetPgs ScaleEnd v 
 
     [<DisplayName("Температура")>]
     [<Description("Значения температур уставки термокамеры в температурных точках термокомпенсации приборов")>]
     member val  Temperature = TemperatureConfigView() with get,set
 
     override __.ToString() = ""
-
 
 type AppConfigView() = 
 
@@ -94,8 +85,8 @@ type AppConfigView() =
     [<DisplayName("Партия")>]    
     member val  Party = PartyConfigView() with get,set
 
-    [<DisplayName("СОМ-порт приборы")>]
-    [<Description("Имя СОМ порта, к которому подключены настраиваемые приборы, пнефмоблок и стенд 6026")>]
+    [<DisplayName("СОМ приборы")>]
+    [<Description("Имя СОМ порта, к которому подключены настраиваемые приборы, пневмоблок и стенд 6026")>]
     [<TypeConverter (typeof<Config.Comport.ComPortNamesConverter>) >]
     member x.ComportProducts
         with get() = config.Main.ComportProducts.PortName
@@ -103,7 +94,7 @@ type AppConfigView() =
             if v <> config.Main.ComportProducts.PortName then
                 config.Main.ComportProducts.PortName <- v
 
-    [<DisplayName("СОМ-порт термокамера")>]
+    [<DisplayName("СОМ термокамера")>]
     [<Description("Имя СОМ порта, к которому подключена термокамера")>]
     [<TypeConverter (typeof<Config.Comport.ComPortNamesConverter>) >]
     member x.ComportTermo
@@ -112,7 +103,7 @@ type AppConfigView() =
             if v <> config.Main.ComportTermo.PortName then
                 config.Main.ComportTermo.PortName <- v
 
-    [<DisplayName("СОМ-порт термокамера")>]
+    [<DisplayName("СОМ HART модем")>]
     [<Description("Имя СОМ порта, к которому подключен HART модем")>]
     [<TypeConverter (typeof<Config.Comport.ComPortNamesConverter>) >]
     member x.ComportHart
@@ -120,7 +111,6 @@ type AppConfigView() =
         and set v = 
             if v <> config.Main.ComportHart.PortName then
                 config.Main.ComportHart.PortName <- v
-                
 
     [<DisplayName("Параметры оборудования")>]
     [<Description("Параметры стенда и термокамеры")>]
@@ -137,15 +127,4 @@ type AppConfigView() =
             if v <> config.View.VisibleCoefs then
                 config.View.VisibleCoefs <- v
 
-    
-        
-
     override __.ToString() = ""
-
-    
-
-
-
-    
-
-    

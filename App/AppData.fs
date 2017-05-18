@@ -40,6 +40,8 @@ let party =
     addChangedListener party
     let i = party.Party.PartyInfo
     parties <- parties.Add (i.ID, i)
+
+    
     party
 
 [<AutoOpen>]

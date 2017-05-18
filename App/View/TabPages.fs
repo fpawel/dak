@@ -17,6 +17,8 @@ let getSelected, setSelected,_ =
             setActivePageTitle tabPage.Title
             tabPage.ShowContent() ) 
 
+    
+
 module TabChart =
     let update() = 
         if getSelected() = TabsheetChart then

@@ -157,15 +157,15 @@ type Party ( party : Dak.Party ) =
 
     member __.GetTermoTemperature = getTermoTemperature        
 
-    member __.SetTermoTemperature t value =
+    member x.SetTermoTemperature t value =
         if Some value <>  party.PartyData.TermoTemperature.TryFind t then
-            party <- 
+            x.Party <- 
                 Party.NewWith party.PartyInfo
                     { party.PartyData with 
                         TermoTemperature =  party.PartyData.TermoTemperature.Add (t,value) }
     member x.SetPgs gas value =
         if Some value <> party.PartyData.BallonConc.TryFind gas then
-            party <- 
+            x.Party <- 
                 Party.NewWith party.PartyInfo
                     { party.PartyData with 
                         BallonConc =  party.PartyData.BallonConc.Add (gas,value) }

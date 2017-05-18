@@ -5,7 +5,6 @@
 open System
 open System.Windows.Forms
 open System.Drawing
-open System.Windows.Forms.DataVisualization.Charting
 
 open MyWinForms.Utils
 
@@ -51,28 +50,26 @@ let rightTabContentPlaceholder,setActivePageTitle =
 
     let p = new Panel(Dock = DockStyle.Top, Height = 30, Parent = par1)
     let _ = new Panel(Parent = p, Dock = DockStyle.Top, Height = 5)
-    let x = new Label(Parent = p, Dock = DockStyle.Top, 
-                        Height = 20, TextAlign = ContentAlignment.MiddleLeft)
+    let x = new Label(Parent = p, Dock = DockStyle.Top, Height = 20, TextAlign = ContentAlignment.MiddleLeft)
     let _ = new Panel(Parent = p, Dock = DockStyle.Top, Height = 5)
+
     x.SetInfoStyle()
     rightTabPagePlaceholder,(fun s -> x.Text <- s )
 
-let tabButtonsPlaceholder, leftBottomTabContentPlaceHolder, leftBottomPlaceHolder = 
+let tabButtonsPlaceholder, leftBottomTabContentPlaceHolder = 
     let _ = new Panel(Parent = mainLayer, Dock = DockStyle.Left, Width = 3)
-    let x = new Panel(Parent = mainLayer, Dock = DockStyle.Left, Width = 140)
-
-    let leftBottomPlaceHolder = new Panel(Parent = x, Dock = DockStyle.Fill)     
+    let leftPanel = new Panel(Parent = mainLayer, Dock = DockStyle.Left, Width = 200)
+    let _ = new Panel(Parent = mainLayer, Dock = DockStyle.Left, Width = 3)
 
     
+    let leftTabContenPlaceholder = new Panel(Parent = leftPanel, Dock = DockStyle.Fill)  
+    let _ = new Panel(Parent = leftPanel, Dock = DockStyle.Top, Height = 10)
+
+    let tabButtonsPlaceholder = new Panel(Parent = leftPanel, Dock = DockStyle.Top)
+    let _ = new Panel(Parent = leftPanel, Dock = DockStyle.Top, Height = 10)
+
     
-    let _ = new Panel(Parent = x, Dock = DockStyle.Top, Height = 10)
-    let leftTabContenPlaceholder = new Panel(Parent = x, Dock = DockStyle.Top, Height = 200)  
-
-    let _ = new Panel(Parent = x, Dock = DockStyle.Top, Height = 10)
-    let left_top_TabButtonsPlaceholder = new Panel(Parent = x, Dock = DockStyle.Top)
-
-    let _ = new Panel(Parent = mainLayer, Dock = DockStyle.Left, Width = 3)
-    left_top_TabButtonsPlaceholder, leftTabContenPlaceholder, leftBottomPlaceHolder
+    tabButtonsPlaceholder, leftTabContenPlaceholder 
 
 let bottomLayer = 
     let _ = new Panel(Parent = mainLayer, Dock = DockStyle.Bottom, Height = 3)
@@ -92,6 +89,8 @@ module HardwareInfo =
     let initialize = 
         [   termo; peumo  ] |> List.iter (fun x -> x.hide() )
         fun() -> ()
+
+open HardwareInfo
 
 type Tabsheet = 
     | TabsheetParty
@@ -166,7 +165,6 @@ module ScenaryColumn =
             new BrightIdeasSoftware.OLVColumn(Text = "Операция", MinimumWidth = 200, Width = 350, 
                                                     IsEditable = false,
                                                     WordWrap = true, Sortable = false)
-       
         x
 
     let time = 
@@ -285,7 +283,7 @@ module SelectedCoefsRows =
                 row.Cells.[0].Value <- Set.contains (getCoefOfRow row) coefs
                 )
 
-let productsToolsLayer = new Panel(Parent = TabsheetParty.BottomTab, Dock = DockStyle.Left, Width = 40 ) 
+//let productsToolsLayer = new Panel(Parent = TabsheetParty.BottomTab, Dock = DockStyle.Left, Width = 40 ) 
     
 let errorMessageBox title message = 
     Logging.error "%A, %s" title message
@@ -302,14 +300,16 @@ let onExeption (e:Exception) =
     failwith ""
 
 
+      
+let private getGrids() = 
+    form.enumControls
+        (fun x -> 
+            if x.GetType()=  typeof<DataGridView>  then                     
+                Some (x :?> DataGridView) 
+            else None)
+        id
+
 let initialize =
-    let getGrids() = 
-        form.enumControls
-            (fun x -> 
-                if x.GetType()=  typeof<DataGridView>  then                     
-                    Some (x :?> DataGridView) 
-                else None)
-            id
     form.FormClosing.Add <| fun _ -> 
         Config.App.config.View.Grids <-
             getGrids()
@@ -357,5 +357,5 @@ let initialize =
 
     aboutForm.Show()
     aboutForm.Refresh()
-
     fun () -> ()
+   

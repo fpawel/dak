@@ -17,7 +17,7 @@ module Helpers1 =
         loop 1uy
 
 
-type TermperaturePt =
+type TemperaturePt =
     | TLow
     | TNorm        
     | THigh
@@ -39,7 +39,7 @@ type TermperaturePt =
         THigh
         T90 ] 
 
-    member x.What = TermperaturePt.what x
+    member x.What = TemperaturePt.what x
 
     override x.ToString() = x.What
 
@@ -328,7 +328,7 @@ type PartyInfo =
 type PartyData = 
     {   Products : Product list
         BallonConc : Map<ScalePt,decimal>
-        TermoTemperature : Map<TermperaturePt,decimal>
+        TermoTemperature : Map<TemperaturePt,decimal>
         PerformingJournal : PerformingJournal }
     static member NewEmpty = 
         {   Products = []

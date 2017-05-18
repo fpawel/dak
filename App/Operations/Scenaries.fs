@@ -81,7 +81,7 @@ let setupTermperaturePt =
     party.GetTermoTemperature 
     >> setupTermo
 
-type TermperaturePt with
+type TemperaturePt with
     member x.Setup() = 
         setupTermperaturePt x
         

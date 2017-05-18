@@ -59,12 +59,21 @@
     <Compile Include="Icons.Designer.cs">
       <DependentUpon>Icons.cs</DependentUpon>
     </Compile>
+    <Compile Include="PartyInfo.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="PartyInfo.Designer.cs">
+      <DependentUpon>PartyInfo.cs</DependentUpon>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="AboutForm.resx">
       <DependentUpon>AboutForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Icons.resx">
       <DependentUpon>Icons.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="PartyInfo.resx">
+      <DependentUpon>PartyInfo.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -84,6 +93,12 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\MyWinForms\MyWinForms.csproj">
+      <Project>{E305A89A-00AD-47F8-AC0E-95431A94BD37}</Project>
+      <Name>MyWinForms</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
