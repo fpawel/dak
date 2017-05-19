@@ -14,6 +14,8 @@ module private Helpers =
 let subscribeOnChanged f = isChanged.AddChanged f
 
 open Alchemy
+open System.Windows.Forms
+
 let party =    
 
     let party = 
@@ -22,6 +24,14 @@ let party =
         |> Result.withDefault(fun err ->
             Logging.error "не удалось открыть ранее сохранённую партию : %s" err
             ViewModel.Party Party.NewEmpty )
+
+    MainWindow.form.Text <- sprintf "Партия %s"  party.What
+    Runtime.PropertyChanged.add party ( fun e -> 
+        if e.PropertyName = "What" then 
+            MainWindow.form.Text <- sprintf "Партия %s"  party.What )
+    
+    MainWindow.TextBlockPartyInfo.DataBindings.Add( new Binding("Text", party, "What" ) )
+    MainWindow.TextBlockPartyInfo.Refresh()
 
     let addChangedListener (x:obj) =
         Runtime.PropertyChanged.add x ( fun _ -> 

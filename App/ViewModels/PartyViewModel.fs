@@ -7,11 +7,9 @@ open Alchemy
 
 [<AutoOpen>]
 module private PartyViewModelHelpers =
-    type PartyPath = Repository.PartyPath
     type P = ProductViewModel
-    type Col = System.Windows.Forms.DataGridViewTextBoxColumn
-    type Cols = System.Windows.Forms.DataGridViewColumnCollection
-
+    type Col = Windows.Forms.DataGridViewTextBoxColumn
+    
 type Party ( party : Dak.Party ) =
     inherit ViewModelBase() 
 
@@ -45,23 +43,20 @@ type Party ( party : Dak.Party ) =
         if xs |> List.forall( fun x -> x.On ) then Nullable<bool>(true) else
         if xs |> List.forall( fun x -> not x.On ) then Nullable<bool>(false) else
         Nullable<bool>()
-    let mutable productsChecked = Nullable<bool>()
-
-    let setMainWindowTitle() = 
-        let i = party.PartyInfo
-        MainWindow.form.Text <- 
-            sprintf "Партия %s %s %A" 
-                (DateTime.format "dd/MM/yy" i.Date)
-                i.ProductType.What  
-                i.Name
-  
-    do
-        setMainWindowTitle()
+    let what (party : Dak.Party) = 
+        sprintf "%s ПГС1=%M ПГС3=%M ПГС4=%M" 
+            party.PartyInfo.ProductType.What 
+            (party.GetPgs ScaleBeg)
+            (party.GetPgs ScaleMid)
+            (party.GetPgs ScaleEnd)
 
     let addLoggingEvent = new Event<_>()
 
     override x.RaisePropertyChanged propertyName = 
         ViewModelBase.raisePropertyChanged x propertyName
+
+    member x.What = what party
+
     member __.NewValidAddr = getNewValidAddr()
     member private __.AddLoggingEvent = addLoggingEvent
     member __.OnAddLogging = addLoggingEvent.Publish            
@@ -75,7 +70,7 @@ type Party ( party : Dak.Party ) =
             |> party.WithProducts
             
         and set (otherParty : Dak.Party) = 
-            
+            let prevparty = party
             party <- otherParty
 
             products
@@ -88,9 +83,15 @@ type Party ( party : Dak.Party ) =
             |> List.map ( fun p -> ProductViewModel.New(p, fun () -> party) )
             |> List.iter products.Add
 
-            x.RaisePropertyChanged "ProductType"
-            x.RaisePropertyChanged "Name"
-            setMainWindowTitle()
+            if prevparty.PartyInfo.ProductType <> party.PartyInfo.ProductType then
+                x.RaisePropertyChanged "ProductType"
+
+            if prevparty.PartyInfo.Name <> party.PartyInfo.Name then
+                x.RaisePropertyChanged "Name"
+
+            if what prevparty <> what party then
+                x.RaisePropertyChanged "What"
+            
             Config.App.config.View.PartyId <- otherParty.PartyInfo.ID
 
     member x.CreateNewProduct() = 
@@ -131,7 +132,7 @@ type Party ( party : Dak.Party ) =
                         { party.PartyInfo with ProductType = t}
                         party.PartyData
                 x.RaisePropertyChanged "ProductType"
-                setMainWindowTitle()
+                x.RaisePropertyChanged "What"
 
     member x.Name 
         with get() = party.PartyInfo.Name
@@ -142,7 +143,7 @@ type Party ( party : Dak.Party ) =
                         { party.PartyInfo with Name = v}
                         party.PartyData
                 x.RaisePropertyChanged "Name"
-                setMainWindowTitle()
+                x.RaisePropertyChanged "What"
 
     member x.ProdLog 
         with get() = party.PartyData.PerformingJournal
@@ -169,8 +170,7 @@ type Party ( party : Dak.Party ) =
                 Party.NewWith party.PartyInfo
                     { party.PartyData with 
                         BallonConc =  party.PartyData.BallonConc.Add (gas,value) }
-            //x.RaisePropertyChanged <| ScalePt.name gas
-            setMainWindowTitle()
+            x.RaisePropertyChanged "What"
             for p in products do
                 p.ForceUpdateErrors()
         

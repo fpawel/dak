@@ -19,7 +19,7 @@ module View =
             mutable InterrogateMilVars :  int Set
             mutable InterrogateStend6026 : bool 
             mutable SelectedCoefs : string 
-            mutable VisibleCoefs : string}
+            mutable VisibleCoefs : string }
         static member create() = 
             {   PartyId = ""
                 Grids = Map.empty

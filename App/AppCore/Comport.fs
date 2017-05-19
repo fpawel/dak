@@ -142,7 +142,7 @@ module private Helpers3 =
 
     let rec loopRecive req recived = 
         let hasBytes() = req.serial.BytesToRead>0
-        checkCondWithTimeout req.config.Timeout hasBytes ( fun() -> sleep 1 )
+        checkCondWithTimeout req.config.Deadline hasBytes ( fun() -> sleep 1 )
         if req.serial.BytesToRead=0 then Ok recived else
         let rxdlen = req.serial.BytesToRead
         let oldlen = recived |> Array.length

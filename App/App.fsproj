@@ -126,6 +126,7 @@
     <Compile Include="Program.fs" />
     <None Include="ProductViewModel.fsx" />
     <None Include="Script1.fsx" />
+    <None Include="Script2.fsx" />
     <None Include="App.config" />
     <Content Include="packages.config" />
     <Content Include="Content\report.css">

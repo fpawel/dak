@@ -319,8 +319,10 @@ module private Helpers1 =
 
     let comboBoxVars = 
         let x =
-            new MyWinForms.FlatComboBox( DropDownStyle = ComboBoxStyle.DropDownList,
-                                        DisplayMember = "What", FlatStyle = FlatStyle.Flat)
+            new ListBox( DisplayMember = "What", Height = 130 )
+            //x.BorderStyle <- BorderStyle.None
+            //new MyWinForms.FlatComboBox( DropDownStyle = ComboBoxStyle.DropDownList, 
+            //                                DisplayMember = "What", FlatStyle = FlatStyle.Flat)
         x.Items.AddRange ( Dak.MilVar.values |> List.map ( Dak.MilVar.name >> box) |> List.toArray)    
 
         let update _ =       

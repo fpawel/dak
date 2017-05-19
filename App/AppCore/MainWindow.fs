@@ -206,6 +206,10 @@ let treeListViewScenary =
 let gridProducts = 
     newGridView TabsheetParty.RightTab "PartyDataGrid"
     //|> GridView.withDisableSelection
+
+let TextBlockPartyInfo = 
+    new Label(Parent = TabsheetParty.RightTab, Font = new Font("Consolas", 14.f), Dock = DockStyle.Top)
+    
  
 let gridCoefs =  
     let x = 

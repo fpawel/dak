@@ -29,6 +29,12 @@ type TemperatureConfigView() =
         with get() = party.GetTermoTemperature THigh
         and set v = party.SetTermoTemperature THigh v 
 
+    [<DisplayName("+90 ⁰C")>]    
+    [<Description("Температура +90 ⁰C")>]
+    member x.H80 
+        with get() = party.GetTermoTemperature T90
+        and set v = party.SetTermoTemperature T90 v 
+
     override __.ToString() = ""
 
 [<TypeConverter(typeof<ExpandableObjectConverter>)>]

@@ -148,18 +148,19 @@ type TestPt =
 module MilVar =
     let conc = 0
     let temp = 2
+    let var1 = 16
     let curr = 4
     let workk = 12
     let refk = 14
-    let var1 = 16
+    
 
     let private info = 
         [   conc,   ("C", "Концентрация", "MilConc", "conc")
             temp,   ("Т",  "Температура", "MilTemperature", "temp")
+            var1,   ("Var1",  "Var1", "MilVar1", "var1")
             curr,   ("I",  "Ток излучателя", "MilCurrent", "curr")
             workk,  ("Work",  "Рабочий канал", "MilWorkK", "workk")
-            refk,  ("Ref",  "Сравнительный канал", "MilRefK", "refk")
-            var1,   ("Var1",  "Var1", "MilVar1", "var1")
+            refk,  ("Ref",  "Сравнительный канал", "MilRefK", "refk")            
         ]
 
     let private m = Map.ofList info

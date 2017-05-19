@@ -149,8 +149,7 @@ module private Helpers =
                 ]                
             ]
 
-        member x.MilTable = 
-           
+        member x.MilTable (vars: int list) = 
             let tempPts = [
                 yield TermoNorm
                 yield TermoLow
@@ -165,12 +164,12 @@ module private Helpers =
                     yield th [
                         %% t.What    
                         class' "cell-right-border"
-                        colspan MilVar.values.Length
+                        colspan vars.Length
                     ]                    
                 ] |>  tr
             let lineVars = 
                 [ for n = 0 to tempPts.Length - 1 do
-                    for var in MilVar.values do
+                    for var in vars do
                         yield th [ 
                             yield %% MilVar.name var 
                             if var = MilVar.var1 then
@@ -178,24 +177,20 @@ module private Helpers =
                         ]
                     
                 ] |>  tr
-            let (~&&) = x.TestResult >> valueError 
+            //let (~&&) = x.TestResult >> valueError 
             let linesGases = 
                 [ for gas in ScalePt.values -> 
                     [   yield th [%% gas.What]   
-                        for t in tempPts do 
-                            yield x.ValueErrorElement (TestTermo (t,gas))
-                            for var in MilVar.values.Tail do
-                                let text = 
-                                    x.Product.Var.TryFind(var,gas,t)
-                                    |> Option.map (sprintf "%M")
-                                    |> Option.withDefault ""
-                                yield 
-                                    td [
-                                        yield %% text
-                                        if var = MilVar.var1 then
-                                            yield class' "cell-right-border"
-                                    ]
-                        
+                        for t in tempPts do                             
+                            for var in vars do
+                                yield
+                                    if var = MilVar.conc then 
+                                        x.ValueErrorElement (TestTermo (t,gas))        
+                                    else 
+                                        td[ x.Product.Var.TryFind(var,gas,t)
+                                            |> Option.map (sprintf "%M")
+                                            |> Option.withDefault ""
+                                            |> text ]                        
                     ] |> tr                   
                 ]
             table [
@@ -245,7 +240,13 @@ module private Helpers =
                     h2 [
                         %% "Техпрогон в диапазоне рабочих температур"
                     ]
-                    i.MilTable] @ i.TestHartReport
+                    i.MilTable [ MilVar.conc; MilVar.temp; MilVar.var1 ]
+                    h2 [
+                        %% "Дополнительные сигналы МИЛ-82"
+                    ]
+                    i.MilTable [ MilVar.curr; MilVar.workk; MilVar.refk ]
+                    div i.TestHartReport 
+                ] 
                 |> section
 
             let eNam =             

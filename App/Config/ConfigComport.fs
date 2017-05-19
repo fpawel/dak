@@ -43,7 +43,7 @@ type Config =
 
         [<DisplayName("Таймаут, мс")>]
         [<Description("Длительность ожидания ответа от прибора в милисекундах")>]   
-        mutable Timeout : int
+        mutable Deadline : int
 
         [<DisplayName("Задержка отправки, мс")>]
         [<Description("Задержка отправки запроса прибору в милисекундах")>]
@@ -53,7 +53,7 @@ type Config =
         [<Description("Длительность ожидания символа ответа в милисекундах")>]
         mutable Chartime : int
 
-        [<DisplayName("Колличество повторов запроса")>]
+        [<DisplayName("Колличество повторов")>]
         [<Description("Колличество повторов запроса прибору")>]
         mutable RepeatCount : int
 
@@ -62,8 +62,8 @@ type Config =
         [<TypeConverter(typeof<YesNoConverter>)>]
         mutable CanLog : bool 
 
-        [<Description("Скорость передачи")>]        
-        [<DisplayName("Скорость передачи СОМ порта, заданная в килобитах в секунду (бодах)")>]
+        [<DisplayName("Скорость передачи")>]        
+        [<Description("Скорость передачи СОМ порта, заданная в килобитах в секунду (бодах)")>]
         [<TypeConverter (typeof<ComPortBoudRatesConverter>) >]
         mutable BaudRate : int 
 
@@ -71,11 +71,11 @@ type Config =
         Description : string }  
     override x.ToString() = 
         if String.IsNullOrEmpty x.PortName then "не установлен" else
-        sprintf "%s, %d Б/с, %d" x.PortName x.BaudRate x.Timeout
+        sprintf "%s, %d Б/с, %d" x.PortName x.BaudRate x.Deadline
 
     static member New() = {   
         PortName = ""
-        Timeout = 1000
+        Deadline = 1000
         Delay = 0
         Chartime = 20
         RepeatCount = 0

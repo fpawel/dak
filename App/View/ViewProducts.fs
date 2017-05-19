@@ -127,7 +127,7 @@ let initialize =
         if e.ColumnIndex = GridProductColumns.conn.Index then
             let text, fore, back =
                 match e.Value :?> Result<string,string> option with
-                | Some (Ok _) -> "Связь установлена", Color.Black, Color.White
+                | Some (Ok _) -> "Связь", Color.Black, Color.White
                 | Some (Err _) -> "Ошибка", Color.Red, Color.LightGray
                 | _ -> "", Color.Black, Color.White
             e.Value <- text

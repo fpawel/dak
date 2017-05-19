@@ -13,6 +13,7 @@ let (<!) attr value = { RootLabel = Attr (attr,value); SubForest = [] }
 let (<<<) x items = { RootLabel = x; SubForest = items }
 let (<==) (tag) items = Tag tag <<< items
 
+let text s = { RootLabel = Text s; SubForest = [] }
 let (~%%) s = { RootLabel = Text s; SubForest = [] }
 
 
