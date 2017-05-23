@@ -68,6 +68,9 @@ type TermoPt =
         | TermoNormRet -> "Возврат НКУ"
         | t -> t.Temperature.What
 
+    static member WhatPt(x:TermoPt) = 
+        x.What
+
     member x.Property = 
         FSharpValue.unionCaseName x
 
@@ -76,16 +79,14 @@ type ScalePt =
     | ScaleMid
     | ScaleEnd
     member x.What = ScalePt.what x
+     
     
     static member values = FSharpType.unionCasesList<ScalePt>
     static member what = function
         | ScaleBeg -> "ПГС1"
         | ScaleMid -> "ПГС3"
         | ScaleEnd -> "ПГС4"
-    static member whatScale = function
-        | ScaleBeg -> "начало шкалы"
-        | ScaleMid -> "середина шкалы"
-        | ScaleEnd -> "конец шкалы"
+    
     
     static member defaultBallonConc scale = function
         | ScaleBeg -> 0m
@@ -286,6 +287,15 @@ type Product =
             Coef    = Map.empty 
             TestHart = None
             TestAdjust = Map.empty  }
+    static member SetKef k (v:decimal option) =  state{                
+        let! p = getState 
+        let m = 
+            match v with
+            | None -> Map.remove k
+            | Some v -> Map.add k v
+               
+        do! setState { p with Coef = m p.Coef   } }
+
 type LogLines = DateTime * Logging.Level * string
 
 type PerformingOperation =

@@ -207,50 +207,53 @@ let private isOperationUncheckedByUser operation =
     
 
 let run stopHardware (x : Operation) =
-    if scenaryKeepRunning.Value || isRrunning.Value then
-        failwith "already performing"
-    if scenary.Value.FullName <> x.FullName then 
-        scenary.Set x
-    operationCurrentRunning.Set (Some x)
-    scenaryKeepRunning.Value <- true
-    isRrunning.Set true   
-    Logging.info "Начало выполнения сценария %A" x.FullName 
-    let dostart, dostop = MyWinForms.Utils.timer 10000 AppData.save
-    dostart()
+    //if scenaryKeepRunning.Value || isRrunning.Value then
+    //    ()
+    //else
+        if scenaryKeepRunning.Value || isRrunning.Value then
+            failwith "already performing"
+        if scenary.Value.FullName <> x.FullName then 
+            scenary.Set x
+        operationCurrentRunning.Set (Some x)
+        scenaryKeepRunning.Value <- true
+        isRrunning.Set true   
+        Logging.info "Начало выполнения сценария %A" x.FullName 
+        let dostart, dostop = MyWinForms.Utils.timer 10000 AppData.save
+        dostart()
 
-    MainWindow.treeListViewScenary.SelectObject x
-    LoggingHtml.set webbJournal x.FullName []
+        MainWindow.treeListViewScenary.SelectObject x
+        LoggingHtml.set webbJournal x.FullName []
     
-    async{
-        let r = Operation.Perform beginRun isKeepRunning isOperationUncheckedByUser x
-        let scenaryWasBreakedByUser = not scenaryKeepRunning.Value
-        scenaryKeepRunning.Value <- false
+        async{
+            let r = Operation.Perform beginRun isKeepRunning isOperationUncheckedByUser x
+            let scenaryWasBreakedByUser = not scenaryKeepRunning.Value
+            scenaryKeepRunning.Value <- false
             
-        let level,message = 
-            [   yield r 
-                if stopHardware then 
-                    yield! stopHardwareWork()  ]
-            |> fun rs ->
-                if rs |> List.exists Option.isSome then 
-                    Logging.Error, rs 
-                                    |> List.choose id 
-                                    |> Seq.toStr "\n" id 
-                                    |> sprintf "Выполнение завершилось с ошибкой. %s"
-                elif Operation.WasErrorWhenRunning x then
-                    Logging.Warn, "при выполнении произошли ошибки"
-                elif scenaryWasBreakedByUser then
-                    Logging.Warn, "выполнение было прервано"
-                else
-                    Logging.Info, "Выполнено"
+            let level,message = 
+                [   yield r 
+                    if stopHardware then 
+                        yield! stopHardwareWork()  ]
+                |> fun rs ->
+                    if rs |> List.exists Option.isSome then 
+                        Logging.Error, rs 
+                                        |> List.choose id 
+                                        |> Seq.toStr "\n" id 
+                                        |> sprintf "Выполнение завершилось с ошибкой. %s"
+                    elif Operation.WasErrorWhenRunning x then
+                        Logging.Warn, "при выполнении произошли ошибки"
+                    elif scenaryWasBreakedByUser then
+                        Logging.Warn, "выполнение было прервано"
+                    else
+                        Logging.Info, "Выполнено"
                                     
-        safe form dostop
-        Comport.Ports.closeOpenedPorts (fun _ _ -> true) 
-        Logging.write level "Окончание выполнения сценария %A - %s" x.FullName message
-        let title = sprintf "%s %s" x.RunInfo.Status x.FullName
-        showScenaryReport.Value title level message 
-        operationCurrentRunning.Set None 
-        isRrunning.Set false
-        for p in party.Products do
-            p.Connection <- None 
-        AppData.save() }
-    |> Async.Start
+            safe form dostop
+            Comport.Ports.closeOpenedPorts (fun _ _ -> true) 
+            Logging.write level "Окончание выполнения сценария %A - %s" x.FullName message
+            let title = sprintf "%s %s" x.RunInfo.Status x.FullName
+            showScenaryReport.Value title level message 
+            operationCurrentRunning.Set None 
+            isRrunning.Set false
+            for p in party.Products do
+                p.Connection <- None 
+            AppData.save() }
+        |> Async.Start

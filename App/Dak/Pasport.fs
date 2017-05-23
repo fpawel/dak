@@ -245,8 +245,7 @@ module private Helpers =
                         %% "Дополнительные сигналы МИЛ-82"
                     ]
                     i.MilTable [ MilVar.curr; MilVar.workk; MilVar.refk ]
-                    div i.TestHartReport 
-                ] 
+                    div i.TestHartReport  ] 
                 |> section
 
             let eNam =             

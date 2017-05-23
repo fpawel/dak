@@ -83,6 +83,14 @@ module TermoChamber =
             "Температура термокамеры" 
         return! None }
 
+    let readTermoLoop()  = "Опрос температуры" -->> fun () ->  
+        maybeErr{
+            while isKeepRunning() do
+                let! (t,stp) = Hardware.Termo.read ()
+                Logging.info "Температура %M\"C\nУставка %M\"C" t stp
+            return ()
+        } 
+
     let private (-->>) s f = 
         s -->> fun () ->
             f () |> Result.someErr

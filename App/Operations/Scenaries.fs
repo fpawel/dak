@@ -257,7 +257,24 @@ let testConc7  =
         yield switchOffPneumo ]
 
    
+let termocompensationMil() = 
+    "Термокомпенсация МИЛ-82" <||> [
+        for scalePt in ScalePt.values  do
+            let whatScale = 
+                match scalePt with 
+                | ScaleBeg -> "Начало шкалы"
+                | ScaleMid -> "Середина шкалы"
+                | ScaleEnd -> "Конец шкалы"
 
+            yield whatScale <||> [
+                "Расчёт" <|> fun () -> 
+                    party.DoForEachOnProduct (fun p -> 
+                        p.ComputeMilTermoCompensation scalePt
+                    ) |> Result.someErr
+                "Ввод" <|> fun () -> 
+                    party.WriteMilTermoCompensation scalePt
+            ]
+        ]
 
 let main() = 
     let productType = party.Party.PartyInfo.ProductType
@@ -277,7 +294,8 @@ let main() =
                     testConc7rele
                 else
                     testConc7            
-            yield texprogonTermo() ]
+            yield texprogonTermo() 
+            yield termocompensationMil() ]
     |> Operation.ApplyRootConfig
     
 let getAllAsList() =     

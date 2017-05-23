@@ -56,6 +56,16 @@ type Dak.ViewModel.Party with
         do! x.DoForEachOnProduct (fun p -> 
             p.WriteKefs kefs |> ignore ) }
 
+    member x.WriteMilTermoCompensation scalePt = maybeErr{
+        do! Comport.testPort appCfg.Main.ComportProducts
+        do! x.DoForEachOnProduct (fun p -> 
+            Alchemy.MilTermoCompensation.info scalePt
+            |> fst
+            |> List.map(fun coef -> coef, p.Product.Coef.TryFind coef)
+            |> p.WriteKefs 
+            |> ignore ) 
+        }
+
     member x.ReadKefs(kefs) = maybeErr{
         do! Comport.testPort appCfg.Main.ComportProducts
         do! x.DoForEachOnProduct (fun p -> 
@@ -78,7 +88,7 @@ type Dak.ViewModel.Party with
 
     member x.ResetAlert() = maybeErr{
         do! party.DoForEachOnProduct ( fun p ->  p.ResetAlert() ) 
-        sleep (TimeSpan.FromSeconds 1.)
+        do! sleep (TimeSpan.FromSeconds 1.)
     }
         
         

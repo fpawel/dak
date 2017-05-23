@@ -107,9 +107,9 @@ type AdjustCurrentData =
     }
 
 
-type ProductViewModel(p : Product, getParty : unit -> Party) =
+type ProductViewModel(product : Product, getParty : unit -> Party) =
     inherit ViewModelBase()    
-    let mutable p = p
+    let mutable product = product
     let mutable connection : Result<string,string> option = None        
     let mutable milVar = Map.empty
     let mutable current_porogs = None
@@ -123,7 +123,7 @@ type ProductViewModel(p : Product, getParty : unit -> Party) =
         }
 
     let coefCol = 
-        let col = new Column(HeaderText = p.What, Visible = p.On)
+        let col = new Column(HeaderText = product.What, Visible = product.On)
         MainWindow.gridCoefs.Columns.Add( col ) |> ignore
         //ProductViewModel.CoefColumns.[col] <- this
         col
@@ -134,8 +134,10 @@ type ProductViewModel(p : Product, getParty : unit -> Party) =
         |> Option.withDefault ""
 
     let updateWhat() = 
-        Chart.setProductLegend p.ID p.What
-        coefCol.HeaderText <- p.What
+        MainWindow.form.PerformThreadSafeAction ( fun () -> 
+            Chart.setProductLegend product.ID product.What
+            coefCol.HeaderText <- product.What
+        )
 
     let getPgs gas =
         getParty().GetPgs gas
@@ -151,7 +153,7 @@ type ProductViewModel(p : Product, getParty : unit -> Party) =
 
     do 
         for k in Coef.values do
-            updKef coefCol (p.Coef.TryFind k) k
+            updKef coefCol (product.Coef.TryFind k) k
 
     override x.RaisePropertyChanged propertyName = 
         ViewModelBase.raisePropertyChanged x propertyName
@@ -159,11 +161,11 @@ type ProductViewModel(p : Product, getParty : unit -> Party) =
     member private x.SetMilVarValue var value =
         let k : PhysVarValues.Key = 
             {   Party = getPartyPath()
-                Product = p.ID
+                Product = product.ID
                 Var = var }
         PhysVarValues.addValue k value
         MainWindow.form.PerformThreadSafeAction <| fun () ->
-            Chart.addProductValue p.ID var value
+            Chart.addProductValue product.ID var value
         if Map.tryFind var milVar <> Some value then
             milVar <- Map.add var value milVar
             x.RaisePropertyChanged <| MilVar.prop var
@@ -210,23 +212,23 @@ type ProductViewModel(p : Product, getParty : unit -> Party) =
                 x.RaisePropertyChanged "Connection"
     
     member x.On 
-        with get () = p.On
+        with get () = product.On
         and set v = 
-            if v <> p.On then
+            if v <> product.On then
                 x.Product <- { x.Product with On = v}
                 
-    member x.What = p.What
+    member x.What = product.What
 
     member x.Addr
-        with get () = p.Addr          
+        with get () = product.Addr          
         and set v = 
-            if v <> p.Addr then
+            if v <> product.Addr then
                 x.Product <- { x.Product with Addr = v}
                 
     member x.Serial
-        with get () = p.Serial
+        with get () = product.Serial
         and set v = 
-            if v <> p.Serial then
+            if v <> product.Serial then
                 x.Product <- 
                     runState (setKef Coef.Serial (Some v)) x.Product   
                     |> snd                
@@ -236,20 +238,20 @@ type ProductViewModel(p : Product, getParty : unit -> Party) =
             x.RaisePropertyChanged test.Property
 
     member x.Product 
-        with get () = p
+        with get () = product
         and set other =
-            if p = other then () else
-            let prev  = p
-            p <- other
+            if product = other then () else
+            let prev  = product
+            product <- other
             let (~%%) = x.RaisePropertyChanged
 
             for var in DakTestData.values do
-                let v = getDakTestData p var
+                let v = getDakTestData product var
                 if v <>  getDakTestData prev var  then
                     %% var.Property
             
             for test in Alchemy.Test.values do
-                let v = getTestResult test p
+                let v = getTestResult test product
                 if v <>  getTestResult test prev then
                     %% test.Property
 
@@ -257,12 +259,12 @@ type ProductViewModel(p : Product, getParty : unit -> Party) =
                 for t in TermoPt.values do
                     for var in MilVar.values do
                         let k = var,scalePt,t
-                        let v = p.Var.TryFind k 
+                        let v = product.Var.TryFind k 
                         if v <> prev.Var.TryFind k then
                             %% termoVarProperty k
 
             for k in Coef.values do
-                let v = p.Coef.TryFind k
+                let v = product.Coef.TryFind k
                 if v <> prev.Coef.TryFind k then                    
                     updKef coefCol v k
 
@@ -273,28 +275,28 @@ type ProductViewModel(p : Product, getParty : unit -> Party) =
                         already <- true
                         updateWhat()
 
-            if p.What <> prev.What then
+            if product.What <> prev.What then
                 x.RaisePropertyChanged "What"
                 updateWhat()
 
-            if p.Addr <> prev.Addr then
+            if product.Addr <> prev.Addr then
                 x.RaisePropertyChanged "Addr"
                 updateWhat()
 
-            if p.Coef.TryFind Coef.Serial <> prev.Coef.TryFind Coef.Serial then
+            if product.Coef.TryFind Coef.Serial <> prev.Coef.TryFind Coef.Serial then
                 updateWhat()
                 x.RaisePropertyChanged "Serial"
 
-            if p.On <> prev.On then
+            if product.On <> prev.On then
                 x.RaisePropertyChanged "On"
-                coefCol.Visible <- p.On
-                if p.On then
+                coefCol.Visible <- product.On
+                if product.On then
                     Chart.addProductSeries
-                        {   Product = p.ID
+                        {   Product = product.ID
                             Party = getPartyPath()
-                            Name = p.What }
+                            Name = product.What }
                 else 
-                    Chart.removeProductSeries p.ID |> ignore
+                    Chart.removeProductSeries product.ID |> ignore
             x.RaisePropertyChanged "Product"
 
     member x.ReadMil var = 
@@ -320,7 +322,7 @@ type ProductViewModel(p : Product, getParty : unit -> Party) =
         match result with
         | Ok value -> 
             x.Product <- 
-                {p with Coef = p.Coef.Add (kef,value) }
+                {product with Coef = product.Coef.Add (kef,value) }
             Logging.info "%s.коэф.%d = %M" x.What kef value
             x.Connection <-
                 sprintf "К%d = %M" kef value
@@ -332,7 +334,7 @@ type ProductViewModel(p : Product, getParty : unit -> Party) =
         result
 
     member x.ReadStend6026() = 
-        let r = Stend6026.read <| int p.Addr
+        let r = Stend6026.read <| int product.Addr
         x.Connection <-
             r 
             |> Result.map( fun a -> 
@@ -358,7 +360,7 @@ type ProductViewModel(p : Product, getParty : unit -> Party) =
 
     member x.WriteKef kef value =
         let value =
-            match value, p.Coef.TryFind kef with
+            match value, product.Coef.TryFind kef with
             | Some value, _ -> Some value
             | _, Some value -> Some  value            
             | _ ->  None
@@ -373,20 +375,20 @@ type ProductViewModel(p : Product, getParty : unit -> Party) =
 
     member __.AdjustCurrentData = adjustCurrentData
 
-    member __.GetTestResult test = getTestResult test p
+    member __.GetTestResult test = getTestResult test product
 
     member __.GetTestResultStr test = 
-        getTestResult test p
+        getTestResult test product
         |> Option.map string 
         |> Option.withDefault ""
 
     member x.SetCoefStr kef value = 
         let value = String.tryParseDecimal value
-        if p.Coef.TryFind kef = value then () else
+        if product.Coef.TryFind kef = value then () else
         let m = 
             match value with
-            | Some value -> p.Coef.Add (kef, value)
-            | _ -> p.Coef.Remove kef
+            | Some value -> product.Coef.Add (kef, value)
+            | _ -> product.Coef.Remove kef
         x.Product <- {x.Product with Coef = m}
 
     member x.LogTest (test : Alchemy.Test)=
@@ -400,12 +402,12 @@ type ProductViewModel(p : Product, getParty : unit -> Party) =
                 "%s : %A" what tr   
 
     member x.GetTermoMilVar var = 
-        p.Var.TryFind var
+        product.Var.TryFind var
         |> Option.map Decimal.toStr6
         |> Option.withDefault ""
 
     member x.GetTermoMilVarStr var = 
-        p.Var.TryFind var
+        product.Var.TryFind var
         |> Option.map Decimal.toStr6
         |> Option.withDefault ""
 
@@ -421,15 +423,15 @@ type ProductViewModel(p : Product, getParty : unit -> Party) =
         x.Product <-  {   x.Product with Var = upd }
 
     member x.GetDakTestData var =
-        getDakTestData p var 
+        getDakTestData product var 
 
     member x.SetDakTestData var value =
         x.Product <- 
             runState (setDakTestData var value) x.Product   
             |> snd       
 
-    member x.GetDakTestDataStr var =
-        getDakTestData p var 
+    member __.GetDakTestDataStr var =
+        getDakTestData product var 
         |> Option.map Decimal.toStr6
         |> Option.withDefault ""
 
@@ -438,6 +440,13 @@ type ProductViewModel(p : Product, getParty : unit -> Party) =
         x.Product <- 
             runState (setDakTestData var value) x.Product   
             |> snd    
+
+    member x.ComputeMilTermoCompensation scalePt = 
+        let party = getParty()
+        let pgs4Conc = party.GetPgs ScaleEnd
+        let st = Alchemy.MilTermoCompensation.compute scalePt pgs4Conc
+        let _,nextP =  runState st product
+        x.Product <- nextP
         
 
     

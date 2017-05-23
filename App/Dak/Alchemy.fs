@@ -314,4 +314,159 @@ type Party with
         |> List.map( Product.New party.GetPgs party.PartyInfo.ProductType )        
         |> party.WithProducts 
         
+module MilTermoCompensation = 
+    let round6 (x:decimal) = System.Math.Round(x,6)
 
+    let tup2 = function [x;y] -> Some(x,y) | _ -> None
+    let tup3 = function [x;y;z] -> Some(x,y,z) | _ -> None
+
+    type DataPt = 
+        | VarPt of TermoVar
+        | CoefPt of int
+
+        
+
+    let whatTermoVar = function 
+        VarPt (var,_,t) ->
+            sprintf "%s.%s" (MilVar.name var) t.What
+
+    let getVarsValues p vars =         
+        let oks, errs =
+            vars |> List.map( fun k ->
+                match Product.GetVar k p with 
+                | None ->  Err k
+                | Some value -> Ok (k,value) )
+            |> List.partition Result.isOk
+        if List.isEmpty errs then 
+            Ok ( oks |> List.map ( Result.Unwrap.ok >> snd) ) 
+        else 
+            errs 
+            |> List.map ( Result.Unwrap.err  >> VarPt)
+            |> Err
+
+    let getKefsValues p kefs = 
+        let oks, errs =
+            kefs |> List.map( fun k ->
+                match Product.GetCoef k p with 
+                | None ->  Err k
+                | Some value -> Ok (k,value) )
+            |> List.partition Result.isOk
+        if List.isEmpty errs then 
+            Ok ( oks |> List.map ( Result.Unwrap.ok >> snd) ) 
+        else 
+            errs 
+            |> List.map ( Result.Unwrap.err >> CoefPt )
+            |> Err  
+
+
+    let fmtErr<'a> (fmt : 'a -> string) = function
+        | [x] -> sprintf "точке %A" (fmt x)
+        | xs -> 
+            xs |> List.rev |> Seq.toStr ", " fmt     
+            |> sprintf "точках %s"
+
+    let termoPoints = 
+        [TermoLow; TermoNorm; TermoHigh]
+
+    let getTermoValues var gas p =
+        termoPoints
+        |> List.map( fun t ->  var, gas, t) 
+        |> getVarsValues p
+
+    let getScaleValues p f =
+        ScalePt.values
+        |> List.map f
+        |> getVarsValues p    
+
+    let getGaussXY p pgsScale  = function
+        | ScaleBeg -> 
+            result {
+                let! t = getTermoValues MilVar.temp ScaleBeg p
+                let! var = getTermoValues MilVar.var1 ScaleBeg p
+                return List.zip t ( List.map (fun var -> - var) var) }
+            |> Result.mapErr( 
+                fmtErr whatTermoVar                
+                >> sprintf "нет значения T0 в %s" )
+
+        | ScaleEnd -> 
+            result {
+                let! t = getTermoValues MilVar.temp ScaleEnd p
+                let! var = getTermoValues MilVar.var1 ScaleEnd p
+                let! var0 = getTermoValues MilVar.var1 ScaleBeg p
+                return List.zip3 t var0 var}
+            |> Result.mapErr( 
+                fmtErr whatTermoVar
+                >> sprintf "нет значения TK в %s" )
+            |> Result.bind(fun xs ->
+                let errs =
+                    xs |> List.zip termoPoints
+                    |> List.map(fun (ptT,(_,var0,var)) ->  if var0 = var then Some ptT else None )
+                    |> List.filter Option.isSome
+                if List.isEmpty errs then 
+                    let vk = xs |> List.map( fun (t,var0,var) -> t, var - var0)
+                    vk |> List.map(fun (t,x) -> t, snd vk.[1] / x)
+                    |> Ok
+                else
+                    errs 
+                    |> List.map Option.get
+                    |> fmtErr TermoPt.WhatPt 
+                    |> sprintf "при расчёте TK деление на ноль в %s"
+                    |> Err )
+        | ScaleMid ->            
+            result{                    
+                let! [k16; k17; k18] = getKefsValues p [Coef.Cchlin0; Coef.Cchlin1; Coef.Cchlin2]
+                let! [v_0_nku; v_s_nku; v_k_nku] = getScaleValues p  ( fun gas ->  MilVar.var1, gas, TermoNorm) 
+                let! [v_0_min; v_s_min; v_k_min] = getScaleValues p  ( fun gas ->  MilVar.var1, gas, TermoLow) 
+                let! [v_0_max; v_s_max; v_k_max] = getScaleValues p  ( fun gas ->  MilVar.var1, gas, TermoHigh) 
+                let! [t1; t2; t3] = 
+                    termoPoints
+                    |> List.map( fun t ->  MilVar.temp, ScaleMid, t) |> getVarsValues p
+                
+
+                let yLo =
+                    let x1 = pgsScale * (v_0_nku-v_s_nku) / (v_0_nku-v_k_nku)
+                    let x2 = pgsScale * (v_0_min-v_s_min)/(v_0_min-v_k_min)
+                    (k16 + k17*x1 + k18*x1*x1 - x2) / 
+                    (k16 + k17*x2 + k18*x2*x2 - x2) 
+                let yHi = 
+                    let x1 = pgsScale * (v_0_nku-v_s_nku)/(v_0_nku-v_k_nku)
+                    let x2 = pgsScale * (v_0_max-v_s_max)/(v_0_max-v_k_max)
+                    (k16 + k17*x1 + k18*x1*x1 - x2) / 
+                    (k16 + k17*x2 + k18*x2*x2 - x2) 
+                        
+                return [ t1, yLo; t2, 1m; t3, yHi ] }
+            |> Result.mapErr( 
+                fmtErr ( function
+                    | CoefPt kef -> sprintf "коэф.%d" kef
+                    | VarPt (var, gas,t) -> sprintf "%A.%A.%A" (MilVar.name var) (ScalePt.what gas) (TermoPt.WhatPt t) )
+                >> sprintf "нет значения TM в %s" )
+       
+       
+    let info = 
+        function
+            | ScaleBeg -> Coef.ChtNull0, "Комп. вл. темп. на нулев. показ."
+            | ScaleMid -> Coef.KChtMid0, "Комп. вл. темп. на середину шк."
+            | ScaleEnd -> Coef.KChtSens0, "Комп. влиян. темп-ры на чувст."
+        >> fun (x,what) ->
+            let coefs = List.init 3 (fun n -> x + n)
+            let skefs = Seq.toStr ", " string coefs
+            coefs, sprintf "расчёт коэффициентов %A, %s" what skefs
+
+    let compute scalePt pgsScale = state {
+        let! product = getState
+        let coefs, what = info scalePt
+        Logging.info "%s : %s" (Product.what product) what 
+
+        let result = getGaussXY product pgsScale scalePt
+        match result with
+        | Err e -> Logging.error "%s : %s" (Product.what product) e
+        | Ok xy ->
+            let x,y = List.toArray xy |> Array.unzip
+            let result =  NumericMethod.GaussInterpolation.Calculate(x,y) 
+            let ff = Seq.toStr ", " string
+            Logging.info "метод Гаусса X=%s Y=%s ==> %s=%s" 
+                (ff x) (ff y) (Seq.toStr ", " string coefs) (ff result)
+            let coef_value = result |> Array.toList |> List.zip coefs
+            for coef,value in coef_value do
+                do! Product.SetKef coef (Some value) 
+        }
