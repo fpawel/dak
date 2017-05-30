@@ -139,7 +139,7 @@ let initialize =
         panelModalMessage.Visible
 
     Thread2.showPerformingMessage.Value <- fun level text -> 
-        if TabPages.getSelected() <> TabsheetScenary then
+        if Tabsheet.GetSelected() <> TabsheetScenary then
             form.PerformThreadSafeAction <| fun () ->
                 let x = Dak.MainWindow.labelPerformingInfo
                 x.Text <- text                

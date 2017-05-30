@@ -18,7 +18,7 @@ let main () =
         let form = Dak.MainWindow.form
 
         Dak.MainWindow.initialize()
-        TabPages.setSelected Dak.MainWindow.TabsheetParty
+        Dak.MainWindow.TabsheetParty.Select()
         TopBar.initialize()
         Products.initialize()        
         Scenary.initialize()

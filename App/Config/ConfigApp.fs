@@ -14,20 +14,16 @@ module View =
 
     type Config =  
         {   mutable PartyId : string
-            mutable Grids : Map<string,Grid>   
             mutable ScnDetailTextSplitterDistance : int 
             mutable InterrogateMilVars :  int Set
             mutable InterrogateStend6026 : bool 
-            mutable SelectedCoefs : string 
-            mutable VisibleCoefs : string }
+            mutable SelectedCoefs : string }
         static member create() = 
             {   PartyId = ""
-                Grids = Map.empty
                 ScnDetailTextSplitterDistance = 0 
                 InterrogateMilVars = Set.ofList [0; 2; 4; 12; 14; 16]
                 InterrogateStend6026 = true
-                SelectedCoefs = "0-11 33 323 325 328 334-338"
-                VisibleCoefs = "0-11 33 323 325 328 334-338"
+                SelectedCoefs = "0-500" 
             }
 
 [<TypeConverter(typeof<ExpandableObjectConverter>)>]

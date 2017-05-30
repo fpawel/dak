@@ -181,7 +181,8 @@ module private Helpers =
             | Some b -> 
                 match AppData.load b.ID with
                 | None -> 
-                    TabPages.TabChart.update()
+                    if MainWindow.Tabsheet.GetSelected() = MainWindow.TabsheetChart then
+                        AppData.updateChartSeriesList ()
                 | Some error -> 
                     let message = 
                         sprintf 

@@ -16,19 +16,8 @@ module private Helpers =
     type CheckBoxColumn = MyWinForms.GridViewCheckBoxColumn
     type TextColumn = DataGridViewTextBoxColumn
     let party = Dak.AppData.party
-    let (~%%) x = x :> C
-
-let updateCoefsGridRowsVisibility _ =   
-    let v = Config.App.config.View
-    let visCoefs = IntRanges.parseSet v.VisibleCoefs 
-    v.VisibleCoefs <- IntRanges.formatSet visCoefs
+    let (~%%) x = x :> C    
     
-    gridCoefs.Rows 
-    |> Seq.cast<DataGridViewRow>
-    |> Seq.iter(fun row -> 
-        row.Visible <- visCoefs.Contains (getCoefOfRow row) )
-
-
 module GridProductColumns = 
     let private txtcol prop hd = 
         %% new TextColumn(DataPropertyName = prop, HeaderText = hd, Width = 50, ReadOnly = true,
@@ -189,9 +178,7 @@ let initialize =
 
     let getSelectedCoefsValue() =  
         let x = Config.App.config.View      
-        Set.intersect 
-            (SelectedCoefsRows.get())
-            (IntRanges.parseSet x.VisibleCoefs)        
+        SelectedCoefsRows.get()
         |> IntRanges.setToList
         |> Seq.toStr " " (fun (n,m) -> 
             if n=m then n.ToString() else sprintf "%d-%d" n m )
@@ -209,9 +196,7 @@ let initialize =
         gridCoefs.CellValueChanged.RemoveHandler cellValueChanged
         let x = Config.App.config.View
         let xs =
-            Set.intersect 
-                (IntRanges.parseSet textboxSelectedCoefs.Text )
-                (IntRanges.parseSet x.VisibleCoefs)            
+            IntRanges.parseSet textboxSelectedCoefs.Text         
         MainWindow.SelectedCoefsRows.set xs
         x.SelectedCoefs <- IntRanges.formatSet xs
         gridCoefs.CellValueChanged.AddHandler cellValueChanged )
@@ -242,8 +227,6 @@ let initialize =
 
     btnUnselectCoef.Click.AddHandler(fun _ _ ->        
         f false ) 
-
-    updateCoefsGridRowsVisibility()
 
     let col = gridCoefs.Columns.[0] :?> MyWinForms.GridViewCheckBoxColumn
     let cell = col.HeaderCell :?> MyWinForms.DatagridViewCheckBoxHeaderCell

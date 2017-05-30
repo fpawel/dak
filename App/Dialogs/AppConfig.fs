@@ -47,11 +47,8 @@ type PartyConfigView() =
         and set v = 
             party.ProductType <- v
             Thread2.scenary.Set (Operations.Scenaries.main())
-            //View.Scenary.updateGridViewBinding()            
-            match View.TabPages.getSelected() with
-            | Dak.MainWindow.TabsheetChart -> 
-                View.TabPages.TabChart.update()           
-            | _ -> ()
+            if MainWindow.Tabsheet.GetSelected () =  MainWindow.TabsheetChart then
+                AppData.updateChartSeriesList ()
             
     [<DisplayName("Наименование")>]    
     [<Description("Наименование партии")>]
@@ -125,12 +122,5 @@ type AppConfigView() =
         and set v = 
             config.Main <- v
 
-    [<DisplayName("Используемые коэффициенты")>]
-    [<Description("Диаипазоны порядковых номеров используемых коэффициентов")>]
-    member x.VisibleCoefs 
-        with get() = config.View.VisibleCoefs
-        and set v = 
-            if v <> config.View.VisibleCoefs then
-                config.View.VisibleCoefs <- v
-
     override __.ToString() = ""
+

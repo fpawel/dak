@@ -153,7 +153,9 @@ let createNewParty (b:Button) =
                 let b = Party.New d.Name prodType d.Pgs1 d.Pgs2 d.Pgs3 d.Count
                 party.Party <- b
                 AppData.save()
-                TabPages.TabChart.update())
+                if Tabsheet.GetSelected () = TabsheetChart then
+                    AppData.updateChartSeriesList ()
+                    )
     popup1.Closing.Add <| fun e ->
         if MyWinForms.Utils.isPropGridEditing g then
             e.Cancel <- true

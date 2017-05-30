@@ -209,6 +209,8 @@ let testConc7rele  =
     
     let processTestPt (testPt : TestPt) = 
         testPt.What <||> [
+            adjust ScaleEdgeBeg
+            adjust ScaleEdgeEnd
             blow Blow1Delay testPt.ScalePt "Продувка для снят. сост. конт. реле"
             "Сброс сигнализации" <|> party.ResetAlert
             "Cнят. сост. конт. реле" <|> fun () ->                     
@@ -244,6 +246,8 @@ let testConc7  =
     
     let processTestPt delaycontext (testPt : TestPt) = 
         testPt.What <||> [
+            adjust ScaleEdgeBeg
+            adjust ScaleEdgeEnd
             newDelayOp "Продувка для снятия концентрации" delaycontext <| 
                 Delay.perform 
                     (sprintf "%s, продувка для снятия конц." testPt.ScalePt.What) true                          
@@ -283,8 +287,7 @@ let main() =
             yield setPorogsProduction
             yield "Выбор измеряемого компонента" <|> party.SelectGas
             yield adjustCurrent
-            yield adjust ScaleEdgeBeg
-            yield adjust ScaleEdgeEnd
+            
             if productType.HasHart then
                 yield  "Проверка HART протокола" <|> fun () ->                     
                     party.DoForEachOnProduct(fun p ->  p.TestHart() |> ignore ) 

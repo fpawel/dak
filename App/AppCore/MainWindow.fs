@@ -136,6 +136,25 @@ type Tabsheet with
             x.BottomTab.Visible <- v
             x.RightTab.Visible <- v)
 
+module private TabPagesHelp1 =
+    let getSelected, setSelected,_ =
+        radioButtons 
+            tabButtonsPlaceholder 
+            Tabsheet.values
+            Tabsheet.title
+            Tabsheet.descr
+            (fun tabPage -> 
+                setActivePageTitle tabPage.Title
+                tabPage.ShowContent() )     
+
+type Tabsheet with
+    
+    static member GetSelected =    
+        TabPagesHelp1.getSelected
+
+    member x.Select() =    
+        TabPagesHelp1.setSelected x
+
 let newLogginWebbrowser parent = 
     let webb =  
         new WebBrowser(Parent = parent, BackColor = TabsheetScenary.RightTab.BackColor, 
@@ -305,25 +324,8 @@ let onExeption (e:Exception) =
 
 
       
-let private getGrids() = 
-    form.enumControls
-        (fun x -> 
-            if x.GetType()=  typeof<DataGridView>  then                     
-                Some (x :?> DataGridView) 
-            else None)
-        id
-
 let initialize =
-    form.FormClosing.Add <| fun _ -> 
-        Config.App.config.View.Grids <-
-            getGrids()
-            |> Seq.map( fun g -> 
-                let v : Config.App.View.Grid =
-                    {   ColWidths = [for c in g.Columns -> c.Width]
-                        ColumnHeaderHeight = g.ColumnHeadersHeight }
-                g.Name, v )     
-            |> Map.ofSeq
-
+    
     let rec h = EventHandler( fun _ _ -> 
         form.Activated.RemoveHandler h
 
@@ -334,24 +336,6 @@ let initialize =
             MessageBox.Show( error, "Ошибка файла конфигурации", MessageBoxButtons.OK, MessageBoxIcon.Warning)
             |> ignore
         
-        for g in getGrids() do 
-            let dt = Config.App.config.View.Grids.TryFind g.Name
-            
-            g.ColumnHeadersHeight <-
-                match dt with
-                | Some { ColumnHeaderHeight = h} -> h
-                | _ -> g.ColumnHeadersHeight
-                |> max (let sz = TextRenderer.MeasureText( "X", g.ColumnHeadersDefaultCellStyle.Font )
-                        sz.Height + 7 )
-            [for c in g.Columns -> c ]  |> List.iteri( fun n c -> 
-                let w = 
-                    match dt with            
-                    | Some { ColWidths = dt } when n < dt.Length ->  dt.[n]
-                    | _ -> 
-                        let sz = TextRenderer.MeasureText( c.HeaderText, c.HeaderCell.Style.Font )
-                        sz.Width + 10
-                c.Width <- max 50 w )
-
         aboutForm.Hide()
         aboutForm.FormBorderStyle <- FormBorderStyle.FixedDialog
         aboutForm.ControlBox <- false

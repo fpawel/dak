@@ -366,7 +366,7 @@ module MilTermoCompensation =
             |> sprintf "точках %s"
 
     let termoPoints = 
-        [TermoLow; TermoNorm; TermoHigh]
+        [TermoLow; TermoNormRet; TermoHigh]
 
     let getTermoValues var gas p =
         termoPoints

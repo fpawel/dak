@@ -1,11 +1,7 @@
 module Runtime
 
 open System
-open System.Collections.Generic
 open System.ComponentModel
-open Microsoft.FSharp.Reflection
-
-
 module PropertyChanged =
 
     let get x = 
@@ -20,7 +16,7 @@ module PropertyChanged =
         (%% x).PropertyChanged.Add f    
 
     let addAction x f =
-        let f = ComponentModel.PropertyChangedEventHandler(f)
+        let f = PropertyChangedEventHandler(f)
         (%% x ).PropertyChanged.AddHandler f 
         f
 

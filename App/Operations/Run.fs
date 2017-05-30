@@ -47,9 +47,7 @@ module Kefs =
         s -->> fun () ->
             let x = appCfg.View
             let kefs = 
-                Set.intersect 
-                    (IntRanges.parseSet x.SelectedCoefs)
-                    (IntRanges.parseSet x.VisibleCoefs)
+                IntRanges.parseSet x.SelectedCoefs
                 |> Set.toList
                 
             if kefs.IsEmpty then Some "не выбрано ни одного коэффициента" else f kefs

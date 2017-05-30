@@ -187,13 +187,11 @@ let initialize =
 
     
     let cellEditStarting (e:BrightIdeasSoftware.CellEditEventArgs) =
-        let x = e.RowObject :?> RunOperationInfo
-        match x.Operation with
-        | Timed _ ->
-            let level = x.Level
+        match e.RowObject :?> Operation with
+        | Timed _ as x ->
             let mutable rect = e.Control.Bounds
             let offset = 
-                match x.Level with
+                match x.RunInfo.Level with
                 | 1 -> -30
                 | 2 -> -40
                 | 3 -> -65
@@ -205,10 +203,9 @@ let initialize =
     treeListViewScenary.CellEditStarting.Add cellEditStarting
 
     let сellEditFinishing (e:BrightIdeasSoftware.CellEditEventArgs) =
-        let x = e.RowObject :?> RunOperationInfo
-        match x.Operation with
-        | Timed _ ->
-            x.DelayTime <- string e.NewValue
+        match e.RowObject :?> Operation with
+        | Timed _ as x ->
+            x.RunInfo.DelayTime <- string e.NewValue
             treeListViewScenary.RefreshItem(e.ListViewItem)
         | _ -> ()
     treeListViewScenary.CellEditFinishing.Add сellEditFinishing
