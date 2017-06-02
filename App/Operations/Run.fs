@@ -5,6 +5,7 @@ open Thread2
 open Dak.Operations.Helpers
 open Dak.Operations.PartyWorks
 open Dak.Operations.ProductWorks
+open System
 
 
 [<AutoOpen>]
@@ -25,6 +26,7 @@ let runInterrogate() = "Опрос" -->> fun () -> maybeErr{
 let setAddr addr = sprintf "Установка адреса %A" addr -->> fun () -> 
     maybeErr{     
         do! Mdbs.write appCfg.Main.ComportProducts 0uy Cmd.setAddy "установка адреса" addr
+        do! sleep (TimeSpan.FromSeconds 1.)
         let! _ =  Mdbs.read3decimal appCfg.Main.ComportProducts (byte addr) 0 "проверка установки адреса"
         () }
 

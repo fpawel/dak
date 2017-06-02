@@ -257,6 +257,7 @@ module private Helpers =
 let createNew party =
     let navs, xs = 
         party.PartyData.Products 
+        |> List.filter(fun p -> p.On)
         |> List.map party.ProductPasport 
         |> List.unzip
     [   div[

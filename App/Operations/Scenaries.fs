@@ -172,11 +172,15 @@ let adjustCurrent  =
                 Logging.info "%s, калибровка тока, I1 = %M" p.What d.I1                 
             }
         doWrite "Установка тока 20 мА" [ Cmd.setCurrent, 20m ]
-        upd "Считывание I2, установка К336 и 4 мА"  <| fun p ->            
+        upd "Считывание I2, установка К336 и 4 мА"  <| fun p ->       
+            let err336 value = 
+                Logging.info "%s, калибровка тока, не удалось расчитать K336 = 16 / (I2 - I1) I2 = I1 = %M" p.What value
+
             maybeErr{
                 let! value,_,_ = p.ReadStend6026()
                 let d = p.AdjustCurrentData
                 d.I2 <- value
+                if d.I2 = d.I1 then err336 value else
                 d.K336 <- 16m/(d.I2 - d.I1)
                 do! p.WriteCmd cmd_set_k_336 d.K336
                 do! p.WriteCmd Cmd.setCurrent 4m

@@ -4,7 +4,7 @@ open System
 
 [<AutoOpen>]
 module Helpers1 =
-    let currentToConc scale current  = (current-4m)/( 16m/scale)
+    let currentToConc scale current  = scale * (current-4m)/ 16m
     let concToCurrent scale conc  = (conc * 16m / scale) + 4m
 
     let newID() = String.getUniqueKey 12
@@ -161,7 +161,7 @@ module MilVar =
             var1,   ("Var1",  "Var1", "MilVar1", "var1")
             curr,   ("I",  "Ток излучателя", "MilCurrent", "curr")
             workk,  ("Work",  "Рабочий канал", "MilWorkK", "workk")
-            refk,  ("Ref",  "Сравнительный канал", "MilRefK", "refk")            
+            refk,   ("Ref",  "Сравнительный канал", "MilRefK", "refk")            
         ]
 
     let private m = Map.ofList info

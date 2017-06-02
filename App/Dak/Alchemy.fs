@@ -189,8 +189,9 @@ type Dak.ProductInfo with
             let pgs = x.GetPgs testPt.ScalePt 
             let scale = x.ProductType.Scale.Value            
             (   testResult,
-                concToCurrent scale <| concErrorlimit x.ProductType pgs ,
-                concToCurrent scale pgs ) ) 
+                concToCurrent scale pgs,
+                concToCurrent scale <| concErrorlimit x.ProductType pgs 
+                 ) ) 
 
     member x.TermoError (t,gas) = 
         let pgs = x.GetPgs gas

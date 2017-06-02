@@ -173,9 +173,6 @@ type Party ( party : Dak.Party ) =
             x.RaisePropertyChanged "What"
             for p in products do
                 p.ForceUpdateErrors()
-        
-                
-    
     
 [<AutoOpen>]
 module private RunInfoHelpers =

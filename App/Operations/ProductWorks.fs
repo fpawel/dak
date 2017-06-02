@@ -143,27 +143,40 @@ type Dak.ViewModel.ProductViewModel with
             do! x.WriteCmd Cmd.setPorog2 porog2
         } |> x.WithLogError
 
-    member x.TestHart() = 
-        
-        let result = maybeErr{
-            do! x.WriteCmd Cmd.hart 1000m
-            let! _ = x.ReadStend6026()
-            let! hartToken = Hardware.Hart.on ()
-            Logging.info "%s, HART: on - %A" x.What hartToken
-            for n = 1 to 10 do
-                let startTime = DateTime.Now
-                let! conc = Hardware.Hart.readConc hartToken
-                Logging.info "%s, HART: концентрация %d = %f" x.What n conc
-                do! sleep (DateTime.Now - startTime)
-            do! Hardware.Hart.off hartToken
-            do! x.WriteKef Coef.Year <| Some 0m
-            let year = decimal DateTime.Now.Year
-            do! x.WriteKef Coef.Year <| Some year
-            let! value = x.ReadKef Coef.Year
-            if value <> year then 
-                return! 
-                    sprintf "%s, HART: коэффициент %d - записано %M, считано %M" 
-                        x.What Coef.Year year value
-                    |> Err
+
+    member x.TestHartActual hartToken = maybeErr{
+        Logging.info "%s, HART: on - %A" x.What hartToken
+        for n = 1 to 10 do
+            let startTime = DateTime.Now
+            let! conc = Hardware.Hart.readConc hartToken
+            Logging.info "%s, HART: концентрация %d = %f" x.What n conc
+            do! sleep (DateTime.Now - startTime)
+        do! Hardware.Hart.off hartToken
+        do! x.WriteKef Coef.Year <| Some 0m
+        let year = decimal DateTime.Now.Year
+        do! x.WriteKef Coef.Year <| Some year
+        let! value = x.ReadKef Coef.Year
+        if value <> year then 
+            return! 
+                sprintf "%s, HART: коэффициент %d - записано %M, считано %M" 
+                    x.What Coef.Year year value
+                |> Err
         }
-        x.Product <- {x.Product with TestHart = Some {Date = DateTime.Now; Result = result}}
+
+    member x.TestHart() =  maybeErr{
+        match x.WriteCmd Cmd.hart 1000m with
+        | Ok () -> ()
+        | Err error -> 
+            Logging.warn "%s: сбой при переключениии на HART, %s. Возможно, HART протокол был активирован ранее" x.What error
+        let! _ = x.ReadStend6026()
+        let! hartToken = Hardware.Hart.on ()
+        let result = x.TestHartActual hartToken
+
+        let level, text = 
+            match result with
+            | Some s -> Logging.Error,s
+            | _ -> Logging.Info, "OK"
+        Logging.write level "%s, результат проверки HART протокола: %s" x.What text        
+        x.Product <- {x.Product with TestHart = Some {Date = DateTime.Now; Result = result}}        
+    } 
+        
