@@ -2,6 +2,13 @@
 
 let private config = Config.App.config.Main
 
+let switch addr =
+    Logging.info "Стенд 6026, переключение #%d" addr 
+    let stendModbusReg = (addr-1)*2   
+    match Mdbs.read3bytes config.ComportProducts config.Stend.Addr stendModbusReg 2 with
+    | Err x -> Err x
+    | Ok _ -> Ok ()
+
 let read addr  = 
     
     let stendModbusReg = (addr-1)*2    

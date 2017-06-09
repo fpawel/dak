@@ -34,6 +34,33 @@ type ComPortBoudRatesConverter() =
     override this.GetStandardValues _ =         
         TypeConverter.StandardValuesCollection( comPortBoudRates )
 
+type ComPortParityConverter() = 
+    inherit Int32Converter()
+    override this.GetStandardValuesSupported _ = true
+    override this.GetStandardValuesExclusive _ = true
+    override this.GetStandardValues _ =         
+        [|  Parity.None
+            Parity.Odd
+            Parity.Even
+            Parity.Mark            
+            Parity.Space
+        |] 
+        |> Array.map int        
+        |> TypeConverter.StandardValuesCollection
+
+type ComPortStopBitsConverter() = 
+    inherit Int32Converter()
+    override this.GetStandardValuesSupported _ = true
+    override this.GetStandardValuesExclusive _ = true
+    override this.GetStandardValues _ =         
+        [|  StopBits.None
+            StopBits.One
+            StopBits.Two
+            StopBits.OnePointFive
+        |] 
+        |> Array.map int
+        |> TypeConverter.StandardValuesCollection
+
 [<TypeConverter(typeof<ExpandableObjectConverter>)>]
 type Config =
     {   [<DisplayName("Порт")>]
@@ -67,6 +94,16 @@ type Config =
         [<TypeConverter (typeof<ComPortBoudRatesConverter>) >]
         mutable BaudRate : int 
 
+        [<DisplayName("Контроль чётности")>]        
+        [<Description("Установить способ проверки бита чётности")>]
+        [<TypeConverter (typeof<ComPortParityConverter>) >]
+        mutable Parity : int
+
+        [<DisplayName("Стоп-бит")>]        
+        [<Description("Установить количество стоповых битов")>]
+        [<TypeConverter (typeof<ComPortStopBitsConverter>) >]
+        mutable StopBits : int
+
         [<Browsable(false)>]
         Description : string }  
     override x.ToString() = 
@@ -81,6 +118,8 @@ type Config =
         RepeatCount = 0
         CanLog = false 
         BaudRate = 9600
+        Parity = int Parity.None
+        StopBits = int StopBits.One
         Description = "-" }
 
     static member WithDescr s = { Config.New() with Description = s}

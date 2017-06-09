@@ -204,14 +204,23 @@ let private isOperationUncheckedByUser operation =
         result 
         )
 // настройка скоростей обмена компортов
-let private setupComportsBoudRates() =     
+let private setupComports() =     
     let cfg = Config.App.config.Main
+
     cfg.ComportProducts.BaudRate <- 9600
+    cfg.ComportProducts.StopBits <- int IO.Ports.StopBits.One
+    cfg.ComportProducts.Parity <- int IO.Ports.Parity.None
+    
     cfg.ComportTermo.BaudRate <- 9600
+    cfg.ComportTermo.StopBits <- int IO.Ports.StopBits.One
+    cfg.ComportTermo.Parity <- int IO.Ports.Parity.None
+
     cfg.ComportHart.BaudRate <- 1200
+    cfg.ComportHart.StopBits <- int IO.Ports.StopBits.One
+    cfg.ComportHart.Parity <- int IO.Ports.Parity.Odd
 
 let run stopHardware (x : Operation) =
-    setupComportsBoudRates()
+    setupComports()
     if scenary.Value.FullName <> x.FullName then 
         scenary.Set x
     operationCurrentRunning.Set (Some x)

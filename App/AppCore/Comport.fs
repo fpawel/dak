@@ -69,7 +69,9 @@ module private Helpers2 =
     let private doApply (sets : Config.Comport.Config) (port : SerialPort) = 
         port.Close()
         port.PortName <- sets.PortName
-        port.BaudRate <- sets.BaudRate     
+        port.BaudRate <- sets.BaudRate    
+        port.Parity <- enum sets.Parity
+        port.StopBits <- enum sets.StopBits
         port.Open()
         discardBuffers port
         Ok port
@@ -82,18 +84,26 @@ module private Helpers2 =
         match Ports.getPort sets with
         | Err x -> Err x
         | Ok port ->
-            if port.IsOpen && port.PortName<>sets.PortName && port.BaudRate<>sets.BaudRate then Ok port else                
-            try doApply sets port with e1 ->
-            try
-                match Ports.removeFailedPort sets with
-                | Err x -> Err x
-                | Ok port -> doApply sets port
-            with e2 ->
-                Logging.error "При открытии порта %A возникли исключительные ситуации\n(1) %A\n(2) %A" 
-                    sets.PortName e1 e2
-                if e1.Message <> e2.Message then sprintf "%s, %s" e1.Message e2.Message else e1.Message
-                |> sprintf "Не удалось открыть порт %s: %s" sets.PortName
-                |> Err 
+            if  port.IsOpen && 
+                port.PortName = sets.PortName && 
+                port.BaudRate = sets.BaudRate &&
+                port.StopBits = enum sets.StopBits &&
+                port.Parity = enum sets.Parity then 
+                Ok port 
+            else                
+                try 
+                    doApply sets port 
+                with e1 ->
+                    try
+                        match Ports.removeFailedPort sets with
+                        | Err x -> Err x
+                        | Ok port -> doApply sets port
+                    with e2 ->
+                        Logging.error "При открытии порта %A возникли исключительные ситуации\n(1) %A\n(2) %A" 
+                            sets.PortName e1 e2
+                        if e1.Message <> e2.Message then sprintf "%s, %s" e1.Message e2.Message else e1.Message
+                        |> sprintf "Не удалось открыть порт %s: %s" sets.PortName
+                        |> Err 
 
     let writeToPort (port:SerialPort) (txd:byte seq)  =        
         let txd = Seq.toArray txd

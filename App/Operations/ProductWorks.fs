@@ -144,7 +144,16 @@ type Dak.ViewModel.ProductViewModel with
         } |> x.WithLogError
 
 
-    member x.TestHartActual hartToken = maybeErr{
+    member x.TestHartActual () = maybeErr{
+
+        match x.WriteCmd Cmd.hart 1000m with
+        | Ok () -> ()
+        | Err error -> 
+            Logging.warn "%s: сбой при переключениии на HART, %s. Возможно, HART протокол был активирован ранее" x.What error
+        do! x.Stend6026Switch()
+        do! Thread2.sleep (TimeSpan.FromSeconds 2.)
+        
+        let! hartToken = Hardware.Hart.on ()
         Logging.info "%s, HART: on - %A" x.What hartToken
         for n = 1 to 10 do
             let startTime = DateTime.Now
@@ -163,20 +172,13 @@ type Dak.ViewModel.ProductViewModel with
                 |> Err
         }
 
-    member x.TestHart() =  maybeErr{
-        match x.WriteCmd Cmd.hart 1000m with
-        | Ok () -> ()
-        | Err error -> 
-            Logging.warn "%s: сбой при переключениии на HART, %s. Возможно, HART протокол был активирован ранее" x.What error
-        let! _ = x.ReadStend6026()
-        let! hartToken = Hardware.Hart.on ()
-        let result = x.TestHartActual hartToken
-
+    member x.TestHart() =      
+        let result = x.TestHartActual()
         let level, text = 
             match result with
             | Some s -> Logging.Error,s
             | _ -> Logging.Info, "OK"
         Logging.write level "%s, результат проверки HART протокола: %s" x.What text        
         x.Product <- {x.Product with TestHart = Some {Date = DateTime.Now; Result = result}}        
-    } 
+    
         

@@ -161,6 +161,10 @@ let adjustCurrent  =
                 do! party.DoForEachOnProduct( fun p -> ignore(f p) )
                 do! sleep()
             }  
+
+    let sleepP () =
+        Thread2.sleep (TimeSpan.FromSeconds 1.)
+
     "Калибровка тока" <||> [ 
         doWrite "Установка к-тов К335=0 К336=1" [ cmd_set_k_335,0m; cmd_set_k_336, 1m]
         doWrite "Установка тока 4 мА" [ Cmd.setCurrent, 4m ]
@@ -169,7 +173,8 @@ let adjustCurrent  =
                 let d = p.AdjustCurrentData
                 let! value,_,_ = p.ReadStend6026()
                 d.I1 <- value
-                Logging.info "%s, калибровка тока, I1 = %M" p.What d.I1                 
+                Logging.info "%s, калибровка тока, I1 = %M" p.What d.I1  
+                do! sleepP ()
             }
         doWrite "Установка тока 20 мА" [ Cmd.setCurrent, 20m ]
         upd "Считывание I2, установка К336 и 4 мА"  <| fun p ->       
@@ -186,6 +191,7 @@ let adjustCurrent  =
                 do! p.WriteCmd Cmd.setCurrent 4m
                 Logging.info "%s, калибровка тока, I2 = %M" p.What d.I2                
                 Logging.info "%s, калибровка тока, K336 = 16 / (I2 - I1) = %M" p.What d.K336
+                do! sleepP ()
             }
         upd "Считывание I3, установка К335"  <| fun p ->            
             maybeErr{
@@ -196,6 +202,7 @@ let adjustCurrent  =
                 do! p.WriteCmd cmd_set_k_335 d.K335
                 Logging.info "%s, калибровка тока, I3 = %M" p.What d.I3                
                 Logging.info "%s, калибровка тока, K335 = 4 - I3 = %M" p.What d.K335
+                do! sleepP ()
             }
         "Установка test_watch_dog1" <|> fun () -> maybeErr{
             do! party.DoForEachOnProduct ( fun p ->  
@@ -213,8 +220,7 @@ let testConc7rele  =
     
     let processTestPt (testPt : TestPt) = 
         testPt.What <||> [
-            adjust ScaleEdgeBeg
-            adjust ScaleEdgeEnd
+            
             blow Blow1Delay testPt.ScalePt "Продувка для снят. сост. конт. реле"
             "Сброс сигнализации" <|> party.ResetAlert
             "Cнят. сост. конт. реле" <|> fun () ->                     
@@ -228,6 +234,8 @@ let testConc7rele  =
                 |> Result.someErr    ]
 
     "Проверка диапазона измерений" <||> [
+        yield adjust ScaleEdgeBeg
+        yield adjust ScaleEdgeEnd
         yield "Установка порогов 90%" <|> fun () ->
             party.SetPorogsByPgsK 0.9m
         yield! List.map processTestPt [Test11; Test22; Test33; Test24; Test15]
@@ -260,6 +268,8 @@ let testConc7  =
             |> Result.someErr ]
 
     "Проверка диапазона измерений" <||> [
+        yield adjust ScaleEdgeBeg
+        yield adjust ScaleEdgeEnd
         yield! List.map (processTestPt BlowDelay) [Test11; Test22; Test33; Test24; Test15; Test36] 
         yield processTestPt Blow1Delay Test17 
         yield switchOffPneumo ]
@@ -294,7 +304,7 @@ let main() =
             
             if productType.HasHart then
                 yield  "Проверка HART протокола" <|> fun () ->                     
-                    party.DoForEachOnProduct(fun p ->  p.TestHart() |> ignore ) 
+                    party.DoForEachOnProduct(fun p ->  p.TestHart()  ) 
                     |> Result.someErr    
             yield 
                 if productType.HasRele then

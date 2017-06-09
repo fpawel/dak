@@ -333,6 +333,14 @@ type ProductViewModel(product : Product, getParty : unit -> Party) =
             x.Connection <- Some (Err err)
         result
 
+    member x.Stend6026Switch () = 
+        let r = Stend6026.switch <| int product.Addr
+        x.Connection <-
+            r 
+            |> Result.map( sprintf "стенд: %A" )
+            |> Some
+        r
+
     member x.ReadStend6026() = 
         let r = Stend6026.read <| int product.Addr
         x.Connection <-
