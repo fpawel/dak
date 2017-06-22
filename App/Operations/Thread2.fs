@@ -38,7 +38,13 @@ let scenary =
         treeListViewScenary.ExpandAll()
 
         // показать в журнале сообщения, которые относятся к этому сценарию
-        LoggingHtml.set webbJournal scenary.FullName scenary.RunInfo.LoggingRecords
+        let loggingRecords = 
+            let xs = scenary.RunInfo.LoggingRecords
+            if xs.Length > 1001 then 
+                xs |> List.rev  |> Seq.take 1000 |> Seq.toList |> List.rev 
+            else    
+                xs
+        LoggingHtml.set webbJournal scenary.FullName loggingRecords
         
 
     valueRef
@@ -179,7 +185,7 @@ let private stopHardwareWork() =
         match Hardware.Termo.state.Value with
         | Some (Ok Hardware.Termo.Stop) | None -> ()
         | _ -> yield cop "остановить термокамеру" "остановка термокамеры" <| fun () -> 
-            Hardware.Termo.stop() ]
+            Hardware.Termo.stop isKeepRunning ]
 
 let private beginRun op = 
     let prev'op = operationCurrentRunning.Get()

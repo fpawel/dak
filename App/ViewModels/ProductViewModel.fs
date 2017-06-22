@@ -362,7 +362,7 @@ type ProductViewModel(product : Product, getParty : unit -> Party) =
         let r = Mdbs.write appCfg.Main.ComportProducts x.Addr cmd what value
         x.Connection <- 
             r 
-            |> Result.map(fun v -> sprintf "%s <-- %s" what (Decimal.toStr6 value))
+            |> Result.map(fun v -> sprintf "%s [%d] <-- %s" what cmd (Decimal.toStr6 value))
             |> Some 
         r
 

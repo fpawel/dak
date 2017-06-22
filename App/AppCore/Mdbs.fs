@@ -194,7 +194,7 @@ module private Helpers1 =
 let NotifyEvent = notify.Publish
 
 let write port addy cmd what value =
-    let what = sprintf "%s <-- %s" what ( System.Decimal.toStr6 value)
+    let what = sprintf "%s [%d] <-- %s" what cmd ( System.Decimal.toStr6 value)
     [|  yield byte (cmd >>> 8)
         yield byte cmd
         yield! Bin.decimalToAnalitBCD6 value |]

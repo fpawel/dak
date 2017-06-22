@@ -41,13 +41,32 @@ type Dak.ViewModel.ProductViewModel with
          ()
             
     member x.WriteKefsInitValues() = 
-        [   yield! 
-                Alchemy.initKefsValues x.Serial party.GetPgs party.Party.PartyInfo.ProductType 
-                |> List.map( fun (coef,value) -> coef, Some value )
-        ]
-        |> List.sortBy fst
-        |> x.WriteKefs
+        maybeErr{
+            do!
+                [   yield! 
+                        Alchemy.initKefsValues x.Serial party.GetPgs party.Party.PartyInfo.ProductType 
+                        |> List.map( fun (coef,value) -> coef, Some value )
+                ]
+                |> List.sortBy fst
+                |> x.WriteKefs
+            let porog1, porog2 = party.GetProductType().Scale.Porogs            
+            do! x.WriteCmd Cmd.setPorog1 porog1
+            do! x.WriteCmd Cmd.setPorog2 porog2
+            do! sleep <| TimeSpan.FromSeconds 1.
+            
+            let componentCode = party.Party.PartyInfo.ProductType.Gas.ComponentCode
+
+            do! x.WriteCmd Cmd.setGas componentCode
+            do! x.WriteCmd Cmd.resetAlert 0m            
+        }
+
         |> ignore
+
+    member x.SetPorogs(porog1,porog2) =  
+        maybeErr{
+            do! x.WriteCmd Cmd.setPorog1 porog1
+            do! x.WriteCmd Cmd.setPorog2 porog2
+        }
 
     member x.ReadKefs kefs = maybeErr {
         for kef in kefs do
@@ -66,12 +85,7 @@ type Dak.ViewModel.ProductViewModel with
             x.ReadStend6026() 
             |> ignore
 
-    member x.SelectGas() = 
-        maybeErr{
-            do! x.WriteCmd Cmd.setGas (party.Party.PartyInfo.ProductType.Gas.ComponentCode) 
-            do! x.WriteCmd Cmd.resetAlert 0m                        
-        }
-        |> x.WithLogError
+   
 
     member x.WithLogError f = 
         match f with
@@ -136,13 +150,6 @@ type Dak.ViewModel.ProductViewModel with
                 }  
             x.LogTest (Alchemy.TestCurr testPt)  
         } |> x.WithLogError
-
-    member x.SetPorogs(porog1,porog2) = 
-        maybeErr{
-            do! x.WriteCmd Cmd.setPorog1 porog1
-            do! x.WriteCmd Cmd.setPorog2 porog2
-        } |> x.WithLogError
-
 
     member x.TestHartActual () = maybeErr{
 

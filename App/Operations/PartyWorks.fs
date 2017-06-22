@@ -71,16 +71,10 @@ type Dak.ViewModel.Party with
         do! x.DoForEachOnProduct (fun p -> 
             p.ReadKefs kefs |> ignore ) }
     
-    member x.WriteKefsInitValues() =
-        party.DoForEachOnProduct (fun p ->  p.WriteKefsInitValues() ) 
-        |> Result.someErr
-
-    member x.SelectGas() =
-        party.DoForEachOnProduct ( fun p ->  p.SelectGas() ) 
-        |> Result.someErr
+        
 
     member x.SetPorogs(porog1,porog2) =
-        party.DoForEachOnProduct ( fun p ->  p.SetPorogs(porog1,porog2) ) 
+        party.DoForEachOnProduct ( fun p ->  p.SetPorogs(porog1,porog2) |> ignore ) 
         |> Result.someErr
 
     member x.SetPorogsByPgsK k =

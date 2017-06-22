@@ -77,7 +77,7 @@ module TermoChamber =
         }
 
     let read () = "Считывание температуры" -->> fun () -> maybeErr{        
-        let! (t,stp) = Hardware.Termo.read ()
+        let! (t,stp) = Hardware.Termo.read isKeepRunning
         Scenaries.ModalMessage.show Logging.Info 
             (sprintf "Температура %M\"C\nУставка %M\"C" t stp)
             "Температура термокамеры" 
@@ -86,7 +86,7 @@ module TermoChamber =
     let readTermoLoop()  = "Опрос температуры" -->> fun () ->  
         maybeErr{
             while isKeepRunning() do
-                let! (t,stp) = Hardware.Termo.read ()
+                let! (t,stp) = Hardware.Termo.read isKeepRunning
                 Logging.info "Температура %M\"C\nУставка %M\"C" t stp
             return ()
         } 
@@ -95,18 +95,18 @@ module TermoChamber =
         s -->> fun () ->
             f () |> Result.someErr
 
-    let start() = "Старт" -->> Hardware.Termo.start
+    let start() = "Старт" -->> ( fun () -> Hardware.Termo.start isKeepRunning )
     
-    let stop() = "Стоп" -->> Hardware.Termo.stop
+    let stop() = "Стоп" -->> ( fun () -> Hardware.Termo.stop isKeepRunning )
     
     let setSetpoint value = "Уставка" -->> fun () -> 
-        Hardware.Termo.setSetpoint value
+        Hardware.Termo.setSetpoint isKeepRunning value
 
 let testConnect _ = 
     "Проверка связи" <|> fun () -> 
         let oks, errs =
             [   yield "Пневмоблок", Hardware.Pneumo.switch 0xFFuy
-                yield "Термокамера", Hardware.Termo.stop() 
+                yield "Термокамера", Hardware.Termo.stop isKeepRunning
                 for p in party.Products do
                     yield p.What + ": цифровой канал", Result.map ignore <| p.ReadMil 0
                     yield p.What + ": стенд 6026", Result.map ignore <| p.ReadStend6026() ]

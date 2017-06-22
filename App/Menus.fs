@@ -147,7 +147,7 @@ let termoToolsPopup =
             "Введите значение уставки термокамеры"
             "Задать уставку термокамеры"
             String.tryParseDecimal
-            Run.TermoChamber.setSetpoint
+            Run.TermoChamber.setSetpoint 
     let do' f _  (x : MyWinForms.Popup) = 
         x.Close()
         f()

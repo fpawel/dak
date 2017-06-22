@@ -66,7 +66,9 @@ let adjust scaleEdgePt =
         }
 
 let stopTermo = 
-    "Остановка термокамеры" <|> (Hardware.Termo.stop >> Result.someErr)
+    "Остановка термокамеры" <|> ( fun () ->
+        Hardware.Termo.stop isKeepRunning 
+            |> Result.someErr)
 
 let switchOffPneumo = 
     "Закрыть пневмоблок" <|> fun () -> switchPneumo None
@@ -163,7 +165,7 @@ let adjustCurrent  =
             }  
 
     let sleepP () =
-        Thread2.sleep (TimeSpan.FromSeconds 1.)
+        Thread2.sleep (TimeSpan.FromSeconds 3.)
 
     "Калибровка тока" <||> [ 
         doWrite "Установка к-тов К335=0 К336=1" [ cmd_set_k_335,0m; cmd_set_k_336, 1m]
@@ -188,7 +190,9 @@ let adjustCurrent  =
                 if d.I2 = d.I1 then err336 value else
                 d.K336 <- 16m/(d.I2 - d.I1)
                 do! p.WriteCmd cmd_set_k_336 d.K336
+                do! sleepP ()
                 do! p.WriteCmd Cmd.setCurrent 4m
+                do! sleepP ()
                 Logging.info "%s, калибровка тока, I2 = %M" p.What d.I2                
                 Logging.info "%s, калибровка тока, K336 = 16 / (I2 - I1) = %M" p.What d.K336
                 do! sleepP ()
@@ -196,13 +200,15 @@ let adjustCurrent  =
         upd "Считывание I3, установка К335"  <| fun p ->            
             maybeErr{
                 let! value,_,_ = p.ReadStend6026()
+                do! sleepP ()
                 let d = p.AdjustCurrentData
                 d.I3 <- value
                 d.K335 <- 4m - d.I3
                 do! p.WriteCmd cmd_set_k_335 d.K335
+                do! sleepP ()
                 Logging.info "%s, калибровка тока, I3 = %M" p.What d.I3                
                 Logging.info "%s, калибровка тока, K335 = 4 - I3 = %M" p.What d.K335
-                do! sleepP ()
+                
             }
         "Установка test_watch_dog1" <|> fun () -> maybeErr{
             do! party.DoForEachOnProduct ( fun p ->  
@@ -297,9 +303,9 @@ let termocompensationMil() =
 let main() = 
     let productType = party.Party.PartyInfo.ProductType
     "Настройка ДАК" <||>
-        [   yield "Установка к-тов исп." <|> party.WriteKefsInitValues
-            yield setPorogsProduction
-            yield "Выбор измеряемого компонента" <|> party.SelectGas
+        [   yield "Установка к-тов исполнения" <|> fun () ->
+                party.DoForEachOnProduct (fun p -> p.WriteKefsInitValues()  ) 
+                |> Result.someErr
             yield adjustCurrent
             
             if productType.HasHart then

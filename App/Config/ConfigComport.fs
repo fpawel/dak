@@ -112,10 +112,10 @@ type Config =
 
     static member New() = {   
         PortName = ""
-        Deadline = 1000
-        Delay = 0
-        Chartime = 20
-        RepeatCount = 0
+        Deadline = 2000
+        Delay = 100
+        Chartime = 50
+        RepeatCount = 5
         CanLog = false 
         BaudRate = 9600
         Parity = int Parity.None
